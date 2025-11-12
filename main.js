@@ -7,10 +7,12 @@ const createWindow = () => {
     width: 800,
     height: 600,
     backgroundColor: '#FFFFFF',
+    autoHideMenuBar: true,
   });
 
-  browserWindow.loadURL(`file://${__dirname}/index.html`);
-  browserWindow.webContents.openDevTools();
+  const targetDir = 'queueing-system-coursework/browser';
+  browserWindow.loadURL(`file://${__dirname}/dist/${targetDir}/index.html`);
+  // browserWindow.webContents.openDevTools();
 
   browserWindow.on('closed', () => {
     browserWindow = null;
