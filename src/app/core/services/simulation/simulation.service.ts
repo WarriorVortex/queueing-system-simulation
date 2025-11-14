@@ -1,6 +1,7 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {EntityService} from '@app/services/entity';
 import {
+  AUTOCONFIGURATION,
   DEFAULT_BUFFER_CAPACITY,
   DEFAULT_DEVICES_NUMBER,
   DEFAULT_SIMULATION_END_TIME,
@@ -16,14 +17,15 @@ import {
   Source
 } from '@app/models';
 import {DeviceRelease, RequestAppearance, SimulationEnd, SimulationEvent} from './events';
-
-type EntityWithId = { readonly id: number };
+import { compareEvents } from './simulation.utils';
+import { EntityGeneratorService } from './entity-generator.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SimulationService {
   private entityService = inject(EntityService);
+  private entityGeneratorService = inject(EntityGeneratorService);
 
   public readonly devicesNumber = signal(inject(DEFAULT_DEVICES_NUMBER));
   public readonly sourcesNumber = signal(inject(DEFAULT_SOURCES_NUMBER));
@@ -36,28 +38,47 @@ export class SimulationService {
   private readonly _currentTime = signal(0);
   public readonly currentTime = this._currentTime.asReadonly();
 
-  public readonly eventQueue = new Array<SimulationEvent>();
-  public readonly rejectionQueue = new Array<Request>();
+  private _eventQueue!: Array<SimulationEvent>;
+  private _rejectionQueue!: Array<Request>;
 
-  private devices!: Device[];
-  private sources!: Source[];
+  private devices!: Map<number, Device>;
+  private sources!: Map<number, Source>;
   private buffer!: Buffer;
 
   private bufferingDispatcher!: BufferingDispatcher;
   private selectionDispatcher!: SelectionDispatcher;
 
   constructor() {
-    this.initEntities();
+    const autoconfig = inject(AUTOCONFIGURATION);
+    if (autoconfig) {
+      this.configureSimulation();
+    }
+  }
+
+  public configureSimulation() {
+    this.devices = this.createIndexedDevices();
+    this.sources = this.createIndexedSources();
+    this.buffer = this.createBuffer();
+    this.initDispatchers();
+    this.initQueues();
+  }
+
+  public get eventQueue() {
+    return this._eventQueue;
+  }
+
+  public get rejectionQueue() {
+    return this._rejectionQueue;
   }
 
   public startSimulation() {
     const simulationEnd = new SimulationEnd(this.simulationEndTime());
-    this.eventQueue.push(simulationEnd);
+    this._eventQueue.push(simulationEnd);
 
-    for (const source of this.sources) {
+    for (const source of this.sources.values()) {
       const request = source.generate(this._currentTime());
       const requestAppearance = new RequestAppearance(request.arrivalTime, request);
-      this.eventQueue.push(requestAppearance);
+      this._eventQueue.push(requestAppearance);
     }
   }
 
@@ -78,7 +99,7 @@ export class SimulationService {
   private processRequestAppearance(event: RequestAppearance) {
     const newRequest = this.generateNextRequest(event.request.sourceId);
     const requestAppearance = new RequestAppearance(newRequest.arrivalTime, newRequest);
-    this.eventQueue.push(requestAppearance);
+    this._eventQueue.push(requestAppearance);
 
     const { request } = event;
     const currentTime = this._currentTime();
@@ -86,23 +107,22 @@ export class SimulationService {
     if (this.selectionDispatcher.isFreeDevice()) {
       const device = this.selectionDispatcher.serveRequest(currentTime, request)!;
       const deviceRelease = new DeviceRelease(device.serviceEndTime!, device);
-      this.eventQueue.push(deviceRelease);
-    } else {
-      try {
-        this.bufferingDispatcher.putInBuffer(request);
-      } catch (err) {
-        if (err instanceof RequestRejectionError) {
-          this.rejectionQueue.push(err.rejectedRequest);
-        }
+      this._eventQueue.push(deviceRelease);
+      return;
+    }
+
+    try {
+      this.bufferingDispatcher.putInBuffer(request);
+    } catch (err) {
+      if (err instanceof RequestRejectionError) {
+        this._rejectionQueue.push(err.rejectedRequest);
       }
     }
   }
 
   private generateNextRequest(sourceId: number) {
     const currentTime = this._currentTime();
-    const source = this.sources
-      .find(({ id }) => id === sourceId)!;
-
+    const source = this.sources.get(sourceId)!;
     return source.generate(currentTime);
   }
 
@@ -122,14 +142,14 @@ export class SimulationService {
 
     const { serviceEndTime } = device;
     const deviceRelease = new DeviceRelease(serviceEndTime!, device);
-    this.eventQueue.push(deviceRelease);
+    this._eventQueue.push(deviceRelease);
   }
 
   private findNextEvent() {
     const currentTime = this._currentTime();
-    const closestEvent = this.eventQueue
+    const closestEvent = this._eventQueue
       .filter(({ isPast }) => !isPast)
-      .sort(this.compareEvents.bind(this))
+      .sort(compareEvents)
       .at(0);
 
     if (closestEvent === undefined) {
@@ -139,54 +159,30 @@ export class SimulationService {
     return closestEvent ?? new SimulationEnd(currentTime);
   }
 
-  private compareEvents(first: SimulationEvent, second: SimulationEvent) {
-    const diff = first.time - second.time;
-    if (diff !== 0) {
-      return diff;
-    }
-    if (first instanceof RequestAppearance) {
-      return -1;
-    }
-    if (second instanceof RequestAppearance) {
-      return 1;
-    }
-    return 0;
-  }
-
   private endSimulation() {
     this._isSimulationEnd.set(true);
   }
 
-  private initEntities() {
-    this.devices = [...this.generateDevices()];
-    this.sources = [...this.generateSources()];
-    this.buffer = this.createBuffer();
-    this.initDispatchers();
+  private initQueues() {
+    this._eventQueue = [];
+    this._rejectionQueue = [];
   }
 
   private initDispatchers() {
     this.bufferingDispatcher = this.entityService.createBufferingDispatcher(this.buffer);
-    this.selectionDispatcher = this.entityService.createRequestSelectionDispatcher(this.devices, this.buffer);
+    this.selectionDispatcher = this.entityService.createSelectionDispatcher(this.devices.values(), this.buffer);
   }
 
-  private *generateDevices() {
-    const length = this.devicesNumber();
-    for (let i = 0; i < length; ++i) {
-      yield this.entityService.createDevice(i + 1);
-    }
-  }
-
-  private *generateSources() {
+  private createIndexedSources() {
     const length = this.sourcesNumber();
-    for (let i = 0; i < length; ++i) {
-      yield this.entityService.createSource(i + 1);
-    }
+    const generator = this.entityGeneratorService.generateIndexedSources(length);
+    return new Map(generator);
   }
 
-  private *createEntries<T extends EntityWithId>(iter: Iterable<T>): Generator<[number, T], void, unknown> {
-    for (const value of iter) {
-      yield [value.id, value];
-    }
+  private createIndexedDevices() {
+    const length = this.devicesNumber();
+    const generator = this.entityGeneratorService.generateIndexedDevices(length);
+    return new Map(generator);
   }
 
   private createBuffer() {

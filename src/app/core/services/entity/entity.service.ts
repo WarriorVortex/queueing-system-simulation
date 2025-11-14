@@ -38,9 +38,9 @@ export class EntityService {
     );
   }
 
-  public createRequestSelectionDispatcher(devices: Device[], buffer: Buffer) {
+  public createSelectionDispatcher(devices: Iterable<Device>, buffer: Buffer) {
     return new SelectionDispatcher(
-      devices,
+      [...devices],
       buffer,
       this.requestSelectionDiscipline,
       this.deviceSelectionDiscipline
