@@ -1,5 +1,5 @@
 {
-  "name": "queueing-system-coursework",
+  "name": "queueing-system-simulation",
   "version": "0.2.0",
   "main": "main.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "test": "ng test",
     "electron": "electron . --trace-warnings",
     "electron-build": "ng build --configuration production",
-    "electron-start": "npm run electron-build && npm run electron"
+    "electron-start": "npm run electron-build && npm run electron",
+    "clear": "rm -rf ./dist ./node_modules ./.angular ./package-lock.json"
   },
   "prettier": {
     "printWidth": 100,

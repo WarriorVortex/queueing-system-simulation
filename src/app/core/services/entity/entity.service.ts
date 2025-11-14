@@ -5,7 +5,7 @@ import {
   REQUEST_INTERVAL_RULE,
   REQUEST_SELECTION_DISCIPLINE, SERVICE_TIME_RULE
 } from './entity.tokens';
-import {Source, Buffer, Device, BufferingDispatcher, RequestSelectionDispatcher} from '@app/models';
+import {Source, Buffer, Device, BufferingDispatcher, SelectionDispatcher} from '@app/models/objects';
 
 @Injectable({
   providedIn: 'root',
@@ -39,7 +39,7 @@ export class EntityService {
   }
 
   public createRequestSelectionDispatcher(devices: Device[], buffer: Buffer) {
-    return new RequestSelectionDispatcher(
+    return new SelectionDispatcher(
       devices,
       buffer,
       this.requestSelectionDiscipline,

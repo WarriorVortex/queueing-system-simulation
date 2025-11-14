@@ -10,7 +10,7 @@ const createWindow = () => {
     autoHideMenuBar: true,
   });
 
-  const targetDir = 'queueing-system-coursework/browser';
+  const targetDir = 'queueing-system-simulation/browser';
   browserWindow.loadURL(`file://${__dirname}/dist/${targetDir}/index.html`);
   // browserWindow.webContents.openDevTools();
 

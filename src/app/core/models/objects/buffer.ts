@@ -33,12 +33,24 @@ export class Buffer {
     return this.size === this.capacity;
   }
 
+  public get isEmpty(): boolean {
+    return this.size === 0;
+  }
+
+  public get hasPlace() {
+    return !this.isFull;
+  }
+
   public shrink() {
     const queue = this.requestQueue;
-    const newQueue = queue.filter(value => value !== null);
+    const newQueue = this.requests;
     for (let i = 0; i < queue.length; ++i) {
       queue[i] = newQueue[i] ?? null;
     }
     this.size = newQueue.length;
+  }
+
+  public get requests(): Request[] {
+    return this.requestQueue.filter(value => value !== null);
   }
 }

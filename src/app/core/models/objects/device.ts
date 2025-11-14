@@ -1,5 +1,5 @@
 import {Request} from './request';
-import {ServiceTimeRule} from './rules';
+import {ServiceTimeRule} from '../rules';
 
 export class Device {
   private currentRequest: Request | null = null;
@@ -12,6 +12,10 @@ export class Device {
 
   public get isBusy(): boolean {
     return this.currentRequest !== null;
+  }
+
+  public get isFree(): boolean {
+    return !this.isBusy;
   }
 
   public startService(request: Request, currentTime: number): void {

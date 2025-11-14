@@ -1,9 +1,9 @@
 import { Request } from './request';
-import {RequestIntervalRule} from './rules';
+import {RequestIntervalRule} from '../rules';
 
 export class Source {
   constructor(
-    private readonly id: number,
+    public readonly id: number,
     private readonly calculateInterval: RequestIntervalRule
   ) {}
 

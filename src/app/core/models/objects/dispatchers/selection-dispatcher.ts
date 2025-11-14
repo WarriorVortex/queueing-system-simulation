@@ -1,9 +1,9 @@
 import { Buffer } from '../buffer';
 import {Request} from '../request';
 import {Device} from '../device';
-import {RequestSelectionDiscipline, DeviceSelectionDiscipline} from '../disciplines';
+import {RequestSelectionDiscipline, DeviceSelectionDiscipline} from '../../disciplines';
 
-export class RequestSelectionDispatcher {
+export class SelectionDispatcher {
   constructor(
     private readonly devices: Device[],
     private readonly buffer: Buffer,
@@ -11,14 +11,24 @@ export class RequestSelectionDispatcher {
     private readonly selectDevice: DeviceSelectionDiscipline,
   ) {}
 
-  public serveRequest(currentTime: number, request?: Request): Device {
+  public serveRequest(currentTime: number, request?: Request): Device | null {
     const selectedRequest = this.selectRequest(this.buffer, request);
+
+    if (selectedRequest === null) {
+      return null;
+    }
+
     this.buffer.remove(selectedRequest);
     this.buffer.shrink();
 
     const selectedDevice = this.selectDevice(this.devices, selectedRequest);
-    selectedDevice.startService(selectedRequest, currentTime);
+    selectedDevice?.startService(selectedRequest, currentTime);
 
     return selectedDevice;
+  }
+
+  public isFreeDevice() {
+    const freeDevice = this.devices.find(device => device.isFree);
+    return freeDevice !== undefined;
   }
 }

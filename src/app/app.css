@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.next-step-btn {
+  width: 200px;
+  height: 40px;
+  padding: 0;
+}

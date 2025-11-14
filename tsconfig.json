@@ -9,6 +9,10 @@
       "@app/models/*": ["src/app/core/models/*"],
       "@app/services": ["src/app/core/services"],
       "@app/services/*": ["src/app/core/services/*"],
+      "@app/providers": ["src/app/core/providers"],
+      "@app/providers/*": ["src/app/core/providers/*"],
+      "@app/utils": ["src/app/core/utils"],
+      "@app/utils/*": ["src/app/core/utils/*"]
     },
     "strict": true,
     "noImplicitOverride": true,
