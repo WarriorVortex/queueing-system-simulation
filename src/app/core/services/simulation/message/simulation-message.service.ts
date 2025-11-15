@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {SimulationService} from '../simulation.service';
-import {map, Observable, Subject} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   BufferingEvent,
@@ -17,16 +17,19 @@ import {FORMAT_MESSAGE_CONFIG} from '@app/services/simulation';
 @Injectable({
   providedIn: 'root'
 })
-export class SimulationMessageService {
-  private simulationService = inject(SimulationService);
+export class SimulationMessageService extends Observable<string> {
+  private simulation = inject(SimulationService);
   private readonly formatMessage = inject(FORMAT_MESSAGE_CONFIG);
-  public readonly message$: Observable<string>;
 
   constructor() {
-    this.message$ = this.simulationService.simulationEvent$.pipe(
-      map(this.formMessage.bind(this)),
-      takeUntilDestroyed()
-    );
+    super(subscriber => {
+      const subscription = this.simulation.simulationEvent$.pipe(
+        map(this.formMessage.bind(this)),
+        takeUntilDestroyed()
+      ).subscribe(subscriber);
+
+      return subscription.unsubscribe;
+    });
   }
 
   private formMessage(event: SimulationEvent): string {

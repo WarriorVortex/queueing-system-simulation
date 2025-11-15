@@ -8,8 +8,9 @@ const DefaultFormatMessage: FormatMessageConfig = {
     return `Заявка ${formatRequest(request)} отправлена в буфер`;
   },
   'requestGeneration': event => {
-    const { sourceId, arrivalTime } = event.generated;
-    return `Источник ${sourceId} сгенерировал заявку (прибытие в t=${arrivalTime})`;
+    const { generated } = event;
+    const { sourceId, arrivalTime } = generated;
+    return `И${sourceId} сгенерировал заявку ${formatRequest(generated)} (прибытие в t=${arrivalTime})`;
   },
   'rejection': event => {
     const { rejected } = event;
@@ -18,21 +19,21 @@ const DefaultFormatMessage: FormatMessageConfig = {
   'serviceStart': event => {
     const { id, servicedRequest, serviceEndTime } = event.device;
     const formattedRequest = formatRequest(servicedRequest!);
-    return `Прибор ${id} начал обслуживание заявки ${formattedRequest} (освободится в t=${serviceEndTime!})`;
+    return `П${id} начал обслуживание заявки ${formattedRequest} (освободится в t=${serviceEndTime!})`;
   },
   'deviceRelease': event => {
     const { device } = event;
     const { id, isFree } = device;
-    let message = `Прибор ${id} завершил обслуживание`;
+    let message = `П${id} завершил обслуживание`;
     if (isFree) {
       message += ` и отправлен в простой`;
     }
-    return message;
+    return `${formatStepInfo(event)} ${message}`;
   },
   'requestAppearance': event => {
     const { request } = event;
     const { sourceId } = request;
-    return `Заявка ${formatRequest(request)} поступила от источника ${sourceId}`;
+    return `${formatStepInfo(event)} Заявка ${formatRequest(request)} поступила от И${sourceId}`;
   },
   'simulationEnd': event => `${formatStepInfo(event)} Конец симуляции`
 }

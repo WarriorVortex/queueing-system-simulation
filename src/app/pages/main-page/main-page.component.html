@@ -1,6 +1,15 @@
-<button (click)="nextStep()" class="next-step-btn">
+<button (click)="simulateNextStep()" class="next-step-btn">
   Следующий шаг
 </button>
+<button (click)="simulateAllSteps()" class="next-step-btn">
+  Полное моделирование
+</button>
+@let n = simulationStep();
+<button (click)="simulateNSteps(n)" class="next-step-btn">
+  Следующие {{ n }} шагов
+</button>
+<input type="number" [(ngModel)]="simulationStep" min="0"/>
+
 <p>Шаг: {{ currentStep() }}</p>
 <p>Время: {{ currentTime() }}</p>
 <p>Сообщения:</p>

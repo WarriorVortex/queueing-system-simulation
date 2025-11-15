@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal} from '@angular/core';
 import {SimulationMessageService, SimulationService} from '@app/services/simulation';
-import {JsonPipe} from '@angular/common';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-main-page',
   imports: [
-    JsonPipe
+    FormsModule
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.less',
@@ -13,26 +13,35 @@ import {JsonPipe} from '@angular/common';
 })
 export class MainPageComponent {
   private changeDetector = inject(ChangeDetectorRef);
-  private simulationService = inject(SimulationService);
-  private simulationMessageService = inject(SimulationMessageService);
+  private simulation = inject(SimulationService);
+  private simulationMessage = inject(SimulationMessageService);
 
-  protected currentStep = this.simulationService.currentStep;
-  protected currentTime = this.simulationService.currentTime;
+  protected currentStep = this.simulation.currentStep;
+  protected currentTime = this.simulation.currentTime;
 
   protected messages: string[] = [];
 
+  protected simulationStep = signal(10);
+
   constructor() {
-    this.simulationService.configureSimulation();
-    this.simulationService.startSimulation();
-    this.simulationMessageService.message$
+    this.simulation.configureSimulation();
+    this.simulationMessage
       .subscribe(message => {
         this.messages.push(message);
         this.changeDetector.markForCheck();
       });
+    this.simulation.startSimulation();
   }
 
-  protected nextStep() {
-    const service = this.simulationService;
-    service.processStep();
+  protected simulateNextStep() {
+    this.simulation.processStep();
+  }
+
+  protected simulateAllSteps() {
+    this.simulation.processAllSteps();
+  }
+
+  protected simulateNSteps(n: number) {
+    this.simulation.processNSteps(n);
   }
 }

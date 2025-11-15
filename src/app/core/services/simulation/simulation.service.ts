@@ -14,7 +14,7 @@ import {
   BufferingEvent,
   DeviceRelease,
   RequestAppearance, RequestGeneration,
-  RequestRejection,
+  RequestRejection, ServiceStart,
   SimulationEnd,
   SimulationEvent,
   SpecialSimulationEvent
@@ -98,9 +98,7 @@ export class SimulationService {
     this.pushEvent(simulationEnd);
 
     for (const source of this._sources.values()) {
-      const request = source.generate(this._currentTime());
-      const requestAppearance = new RequestAppearance(request.arrivalTime, request);
-      this.pushEvent(requestAppearance);
+      this.generateNextRequest(source.id);
     }
   }
 
@@ -129,22 +127,19 @@ export class SimulationService {
     }
   }
 
-  public processFull() {
+  public processAllSteps() {
     this.processNSteps(Infinity);
   }
 
   private processRequestAppearance(event: RequestAppearance) {
-    const newRequest = this.generateNextRequest(event.request.sourceId);
-    const requestAppearance = new RequestAppearance(newRequest.arrivalTime, newRequest);
-    this.pushEvent(requestAppearance);
+    this.generateNextRequest(event.request.sourceId);
 
     const { request } = event;
     const currentTime = this._currentTime();
 
     if (this.selectionDispatcher.isFreeDevice()) {
       const device = this.selectionDispatcher.serveRequest(currentTime, request)!;
-      const deviceRelease = new DeviceRelease(device.serviceEndTime!, device);
-      this.pushEvent(deviceRelease);
+      this.emitDeviceServe(device);
       return;
     }
 
@@ -167,6 +162,9 @@ export class SimulationService {
     const generation = new RequestGeneration(currentTime, request);
     this.emitEvent(generation);
 
+    const requestAppearance = new RequestAppearance(request.arrivalTime, request);
+    this.pushEvent(requestAppearance);
+
     return request;
   }
 
@@ -179,14 +177,21 @@ export class SimulationService {
 
     const currentTime = this._currentTime();
     const device = this.selectionDispatcher.serveRequest(currentTime);
-
     if (!device) {
       return;
     }
 
-    const { serviceEndTime } = device;
-    const deviceRelease = new DeviceRelease(serviceEndTime!, device);
+    this.emitDeviceServe(device);
+  }
+
+  private emitDeviceServe(device: Device) {
+    const currentTime = this._currentTime();
+
+    const deviceRelease = new DeviceRelease(device.serviceEndTime!, device);
     this.pushEvent(deviceRelease);
+
+    const startService = new ServiceStart(currentTime, device);
+    this.emitEvent(startService);
   }
 
   private findNextEvent() {
