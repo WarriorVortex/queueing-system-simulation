@@ -28,8 +28,8 @@ export const DEFAULT_SIMULATION_END_TIME = new InjectionToken<number>(
   }
 );
 
-export const AUTOCONFIGURATION = new InjectionToken<boolean>(
-  'AUTOCONFIGURATION',
+export const USE_AUTOCONFIGURATION = new InjectionToken<boolean>(
+  'USE_AUTOCONFIGURATION',
   {
     factory: () => false
   }

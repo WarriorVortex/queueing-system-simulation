@@ -1,6 +1,6 @@
 import {Component, inject} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {SimulationService} from '@app/services/simulation';
+import {SimulationMessageService, SimulationService} from '@app/services/simulation';
 
 @Component({
   selector: 'app-root',
@@ -10,20 +10,17 @@ import {SimulationService} from '@app/services/simulation';
 })
 export class App {
   private simulationService = inject(SimulationService);
+  private simulationMessageService = inject(SimulationMessageService);
+  protected currentStep = this.simulationService.currentStep;
 
   constructor() {
+    this.simulationService.configureSimulation();
     this.simulationService.startSimulation();
-    while (!this.simulationService.isSimulationEnd()) {
-      this.simulationService.processStep();
-    }
-    console.log(this.simulationService.currentTime());
-    console.log(this.simulationService.rejectionQueue.length);
+    this.simulationMessageService.message$.subscribe(console.log);
   }
 
   protected nextStep() {
     const service = this.simulationService;
     service.processStep();
-    console.log(service.currentTime());
-    console.log([...service.eventQueue]);
   }
 }

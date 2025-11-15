@@ -33,4 +33,8 @@ export class Device {
   public get serviceEndTime() {
     return this.freeTime;
   }
+
+  public get servicedRequest() {
+    return this.currentRequest
+  }
 }

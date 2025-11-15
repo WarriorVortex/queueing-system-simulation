@@ -1,4 +1,4 @@
-import {RequestAppearance, SimulationEvent} from './events';
+import {RequestAppearance, SimulationEvent, SpecialSimulationEvent} from './events';
 
 export default class SimulationUtils {
   private constructor() {}
@@ -16,8 +16,13 @@ export default class SimulationUtils {
     }
     return 0;
   }
+
+  static isSpecialEvent(event: SimulationEvent): event is SpecialSimulationEvent {
+    return event instanceof SpecialSimulationEvent;
+  }
 }
 
 export const {
-  compareEvents
+  compareEvents,
+  isSpecialEvent
 } = SimulationUtils;

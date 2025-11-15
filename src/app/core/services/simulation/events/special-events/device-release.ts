@@ -1,7 +1,7 @@
-import {SimulationEvent} from './simulation-event';
 import {Device} from '@app/models';
+import {SpecialSimulationEvent} from './special-simulation-event';
 
-export class DeviceRelease extends SimulationEvent {
+export class DeviceRelease extends SpecialSimulationEvent {
   constructor(
     time: number,
     public readonly device: Device

@@ -1,11 +1,11 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {EntityService} from '@app/services/entity';
 import {
-  AUTOCONFIGURATION,
   DEFAULT_BUFFER_CAPACITY,
   DEFAULT_DEVICES_NUMBER,
   DEFAULT_SIMULATION_END_TIME,
   DEFAULT_SOURCES_NUMBER,
+  USE_AUTOCONFIGURATION,
 } from './simulation.tokens';
 import {
   Buffer,
@@ -16,9 +16,18 @@ import {
   SelectionDispatcher,
   Source
 } from '@app/models';
-import {DeviceRelease, RequestAppearance, SimulationEnd, SimulationEvent} from './events';
-import { compareEvents } from './simulation.utils';
-import { EntityGeneratorService } from './entity-generator.service';
+import {
+  BufferingEvent,
+  DeviceRelease,
+  RequestAppearance, RequestGeneration,
+  RequestRejection,
+  SimulationEnd,
+  SimulationEvent,
+  SpecialSimulationEvent
+} from './events';
+import {compareEvents} from './simulation.utils';
+import {Subject} from 'rxjs';
+import {EntityGeneratorService} from './entity-generator.service';
 
 @Injectable({
   providedIn: 'root',
@@ -35,30 +44,37 @@ export class SimulationService {
   private readonly _isSimulationEnd = signal(false);
   public readonly isSimulationEnd= this._isSimulationEnd.asReadonly();
 
+  private _currentStep = signal(0);
+  public currentStep = this._currentStep.asReadonly();
+
   private readonly _currentTime = signal(0);
   public readonly currentTime = this._currentTime.asReadonly();
 
-  private _eventQueue!: Array<SimulationEvent>;
-  private _rejectionQueue!: Array<Request>;
+  private readonly _simulationEvent$ = new Subject<SimulationEvent>();
+  public readonly simulationEvent$ = this._simulationEvent$.asObservable();
 
-  private devices!: Map<number, Device>;
-  private sources!: Map<number, Source>;
-  private buffer!: Buffer;
+  private _eventQueue!: Array<SpecialSimulationEvent>;
+  private _rejectionQueue!: Array<RequestRejection>;
+
+  private _devices!: Map<number, Device>;
+  private _sources!: Map<number, Source>;
+  private _buffer!: Buffer;
 
   private bufferingDispatcher!: BufferingDispatcher;
   private selectionDispatcher!: SelectionDispatcher;
 
   constructor() {
-    const autoconfig = inject(AUTOCONFIGURATION);
+    const autoconfig = inject(USE_AUTOCONFIGURATION);
     if (autoconfig) {
       this.configureSimulation();
     }
   }
 
   public configureSimulation() {
-    this.devices = this.createIndexedDevices();
-    this.sources = this.createIndexedSources();
-    this.buffer = this.createBuffer();
+    this._currentStep.set(0);
+    this._devices = this.createIndexedDevices();
+    this._sources = this.createIndexedSources();
+    this._buffer = this.createBuffer();
     this.initDispatchers();
     this.initQueues();
   }
@@ -71,20 +87,33 @@ export class SimulationService {
     return this._rejectionQueue;
   }
 
+  public get devices() {
+    return [...this._devices.values()];
+  }
+
+  public get sources() {
+    return [...this._devices.values()];
+  }
+
+  public get buffer() {
+    return this._buffer;
+  }
+
   public startSimulation() {
     const simulationEnd = new SimulationEnd(this.simulationEndTime());
-    this._eventQueue.push(simulationEnd);
+    this.pushEvent(simulationEnd);
 
-    for (const source of this.sources.values()) {
+    for (const source of this._sources.values()) {
       const request = source.generate(this._currentTime());
       const requestAppearance = new RequestAppearance(request.arrivalTime, request);
-      this._eventQueue.push(requestAppearance);
+      this.pushEvent(requestAppearance);
     }
   }
 
   public processStep() {
     const event = this.findNextEvent();
     this._currentTime.set(event.time);
+    this._currentStep.update(i => i + 1);
 
     if (event instanceof RequestAppearance) {
       this.processRequestAppearance(event);
@@ -96,10 +125,16 @@ export class SimulationService {
     event.isPast = true;
   }
 
+  public processNSteps(n: number = 1) {
+    while (n-- > 0 && !this._isSimulationEnd()) {
+      this.processStep();
+    }
+  }
+
   private processRequestAppearance(event: RequestAppearance) {
     const newRequest = this.generateNextRequest(event.request.sourceId);
     const requestAppearance = new RequestAppearance(newRequest.arrivalTime, newRequest);
-    this._eventQueue.push(requestAppearance);
+    this.pushEvent(requestAppearance);
 
     const { request } = event;
     const currentTime = this._currentTime();
@@ -107,29 +142,36 @@ export class SimulationService {
     if (this.selectionDispatcher.isFreeDevice()) {
       const device = this.selectionDispatcher.serveRequest(currentTime, request)!;
       const deviceRelease = new DeviceRelease(device.serviceEndTime!, device);
-      this._eventQueue.push(deviceRelease);
+      this.pushEvent(deviceRelease);
       return;
     }
 
     try {
       this.bufferingDispatcher.putInBuffer(request);
+      const buffering = new BufferingEvent(currentTime, request);
+      this.emitEvent(buffering);
     } catch (err) {
       if (err instanceof RequestRejectionError) {
-        this._rejectionQueue.push(err.rejectedRequest);
+        this.rejectRequest(err.rejectedRequest);
       }
     }
   }
 
   private generateNextRequest(sourceId: number) {
     const currentTime = this._currentTime();
-    const source = this.sources.get(sourceId)!;
-    return source.generate(currentTime);
+    const source = this._sources.get(sourceId)!;
+    const request = source.generate(currentTime);
+
+    const generation = new RequestGeneration(currentTime, request);
+    this.emitEvent(generation);
+
+    return request;
   }
 
   private processDeviceRelease(event: DeviceRelease) {
     event.device.finishService();
 
-    if (this.buffer.isEmpty) {
+    if (this._buffer.isEmpty) {
       return;
     }
 
@@ -142,7 +184,7 @@ export class SimulationService {
 
     const { serviceEndTime } = device;
     const deviceRelease = new DeviceRelease(serviceEndTime!, device);
-    this._eventQueue.push(deviceRelease);
+    this.pushEvent(deviceRelease);
   }
 
   private findNextEvent() {
@@ -169,8 +211,8 @@ export class SimulationService {
   }
 
   private initDispatchers() {
-    this.bufferingDispatcher = this.entityService.createBufferingDispatcher(this.buffer);
-    this.selectionDispatcher = this.entityService.createSelectionDispatcher(this.devices.values(), this.buffer);
+    this.bufferingDispatcher = this.entityService.createBufferingDispatcher(this._buffer);
+    this.selectionDispatcher = this.entityService.createSelectionDispatcher(this._devices.values(), this._buffer);
   }
 
   private createIndexedSources() {
@@ -188,5 +230,21 @@ export class SimulationService {
   private createBuffer() {
     const capacity = this.bufferCapacity();
     return this.entityService.createBuffer(capacity);
+  }
+
+  private rejectRequest(rejected: Request) {
+    const currentTime = this._currentTime();
+    const rejection = new RequestRejection(currentTime, rejected);
+    this._rejectionQueue.push(rejection);
+    this.emitEvent(rejection);
+  }
+
+  private pushEvent(event: SpecialSimulationEvent) {
+    this._eventQueue.push(event);
+    this.emitEvent(event);
+  }
+
+  private emitEvent(event: SimulationEvent) {
+    this._simulationEvent$.next(event);
   }
 }
