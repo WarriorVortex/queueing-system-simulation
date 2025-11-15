@@ -1,36 +1,22 @@
 import {InjectionToken} from '@angular/core';
 
-export const DEFAULT_DEVICES_NUMBER = new InjectionToken<number>(
-  'DEFAULT_DEVICES_NUMBER',
-  {
-    factory: () => 3
-  }
-);
+export interface SimulationParams {
+  devicesNumber: number,
+  sourcesNumber: number,
+  bufferCapacity: number,
+  endTime: number,
+  autoconfig: boolean,
+}
 
-export const DEFAULT_SOURCES_NUMBER = new InjectionToken<number>(
-  'DEFAULT_SOURCES_NUMBER',
+export const DEFAULT_SIMULATION_PARAMS = new InjectionToken<SimulationParams>(
+  'DEFAULT_SIMULATION_PARAMS',
   {
-    factory: () => 3
-  }
-);
-
-export const DEFAULT_BUFFER_CAPACITY = new InjectionToken<number>(
-  'DEFAULT_BUFFER_CAPACITY',
-  {
-    factory: () => 3
-  }
-);
-
-export const DEFAULT_SIMULATION_END_TIME = new InjectionToken<number>(
-  'DEFAULT_SIMULATION_END_TIME',
-  {
-    factory: () => 100
-  }
-);
-
-export const USE_AUTOCONFIGURATION = new InjectionToken<boolean>(
-  'USE_AUTOCONFIGURATION',
-  {
-    factory: () => false
+    factory: () => ({
+      devicesNumber: 3,
+      sourcesNumber: 3,
+      bufferCapacity: 3,
+      endTime: 100,
+      autoconfig: false
+    })
   }
 );

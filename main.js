@@ -4,15 +4,15 @@ let browserWindow;
 
 const createWindow = () => {
   browserWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 800 * 1.2,
+    height: 600 * 1.2,
     backgroundColor: '#FFFFFF',
     autoHideMenuBar: true,
   });
 
   const targetDir = 'queueing-system-simulation/browser';
   browserWindow.loadURL(`file://${__dirname}/dist/${targetDir}/index.html`);
-  // browserWindow.webContents.openDevTools();
+  browserWindow.webContents.openDevTools();
 
   browserWindow.on('closed', () => {
     browserWindow = null;

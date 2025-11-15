@@ -1,12 +1,6 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {EntityService} from '@app/services/entity';
-import {
-  DEFAULT_BUFFER_CAPACITY,
-  DEFAULT_DEVICES_NUMBER,
-  DEFAULT_SIMULATION_END_TIME,
-  DEFAULT_SOURCES_NUMBER,
-  USE_AUTOCONFIGURATION,
-} from './simulation.tokens';
+import { DEFAULT_SIMULATION_PARAMS } from './simulation.tokens';
 import {
   Buffer,
   BufferingDispatcher,
@@ -35,14 +29,15 @@ import {EntityGeneratorService} from './entity-generator.service';
 export class SimulationService {
   private entityService = inject(EntityService);
   private entityGeneratorService = inject(EntityGeneratorService);
+  private readonly defaultParams = inject(DEFAULT_SIMULATION_PARAMS);
 
-  public readonly devicesNumber = signal(inject(DEFAULT_DEVICES_NUMBER));
-  public readonly sourcesNumber = signal(inject(DEFAULT_SOURCES_NUMBER));
-  public readonly bufferCapacity = signal(inject(DEFAULT_BUFFER_CAPACITY));
-  public readonly simulationEndTime = signal(inject(DEFAULT_SIMULATION_END_TIME));
+  public readonly devicesNumber = signal(this.defaultParams.devicesNumber);
+  public readonly sourcesNumber = signal(this.defaultParams.sourcesNumber);
+  public readonly bufferCapacity = signal(this.defaultParams.bufferCapacity);
+  public readonly simulationEndTime = signal(this.defaultParams.endTime);
 
   private readonly _isSimulationEnd = signal(false);
-  public readonly isSimulationEnd= this._isSimulationEnd.asReadonly();
+  public readonly isSimulationEnd = this._isSimulationEnd.asReadonly();
 
   private _currentStep = signal(0);
   public currentStep = this._currentStep.asReadonly();
@@ -53,8 +48,8 @@ export class SimulationService {
   private readonly _simulationEvent$ = new Subject<SimulationEvent>();
   public readonly simulationEvent$ = this._simulationEvent$.asObservable();
 
-  private _eventQueue!: Array<SpecialSimulationEvent>;
-  private _rejectionQueue!: Array<RequestRejection>;
+  private _closestEventSet = new Set<SpecialSimulationEvent>();
+  private _rejectionQueue = new Array<RequestRejection>();
 
   private _devices!: Map<number, Device>;
   private _sources!: Map<number, Source>;
@@ -64,8 +59,7 @@ export class SimulationService {
   private selectionDispatcher!: SelectionDispatcher;
 
   constructor() {
-    const autoconfig = inject(USE_AUTOCONFIGURATION);
-    if (autoconfig) {
+    if (this.defaultParams.autoconfig) {
       this.configureSimulation();
     }
   }
@@ -76,14 +70,14 @@ export class SimulationService {
     this._sources = this.createIndexedSources();
     this._buffer = this.createBuffer();
     this.initDispatchers();
-    this.initQueues();
+    this.clearQueues();
   }
 
-  public get eventQueue() {
-    return this._eventQueue;
+  public get closestEvents() {
+    return [...this._closestEventSet].sort(compareEvents)
   }
 
-  public get rejectionQueue() {
+  public get rejections() {
     return this._rejectionQueue;
   }
 
@@ -115,6 +109,9 @@ export class SimulationService {
     this._currentTime.set(event.time);
     this._currentStep.update(i => i + 1);
 
+    event.step = this._currentStep();
+    this.emitEvent(event);
+
     if (event instanceof RequestAppearance) {
       this.processRequestAppearance(event);
     } else if (event instanceof DeviceRelease) {
@@ -122,13 +119,18 @@ export class SimulationService {
     } else {
       this.endSimulation();
     }
-    event.isPast = true;
+
+    this.popEvent(event);
   }
 
   public processNSteps(n: number = 1) {
     while (n-- > 0 && !this._isSimulationEnd()) {
       this.processStep();
     }
+  }
+
+  public processFull() {
+    this.processNSteps(Infinity);
   }
 
   private processRequestAppearance(event: RequestAppearance) {
@@ -189,10 +191,7 @@ export class SimulationService {
 
   private findNextEvent() {
     const currentTime = this._currentTime();
-    const closestEvent = this._eventQueue
-      .filter(({ isPast }) => !isPast)
-      .sort(compareEvents)
-      .at(0);
+    const closestEvent = this.closestEvents.at(0);
 
     if (closestEvent === undefined) {
       console.error('No events in event queue');
@@ -205,9 +204,11 @@ export class SimulationService {
     this._isSimulationEnd.set(true);
   }
 
-  private initQueues() {
-    this._eventQueue = [];
-    this._rejectionQueue = [];
+  private clearQueues() {
+    this._closestEventSet.clear();
+    while (this._rejectionQueue.length > 0) {
+      this._rejectionQueue.pop();
+    }
   }
 
   private initDispatchers() {
@@ -240,8 +241,12 @@ export class SimulationService {
   }
 
   private pushEvent(event: SpecialSimulationEvent) {
-    this._eventQueue.push(event);
-    this.emitEvent(event);
+    this._closestEventSet.add(event);
+  }
+
+  private popEvent(event: SpecialSimulationEvent) {
+    this._closestEventSet.delete(event);
+    event.isPast = true;
   }
 
   private emitEvent(event: SimulationEvent) {

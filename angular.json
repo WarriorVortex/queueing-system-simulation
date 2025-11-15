@@ -5,7 +5,18 @@
   "projects": {
     "queueing-system-simulation": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:service": {
+          "type": "service",
+          "path": "src/app/core/services"
+        },
+        "@schematics/angular:component": {
+          "type": "component",
+          "displayBlock": true,
+          "changeDetection": "OnPush",
+          "style": "less"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",

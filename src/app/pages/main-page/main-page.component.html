@@ -1,0 +1,9 @@
+<button (click)="nextStep()" class="next-step-btn">
+  Следующий шаг
+</button>
+<p>Шаг: {{ currentStep() }}</p>
+<p>Время: {{ currentTime() }}</p>
+<p>Сообщения:</p>
+@for (message of messages; track $index) {
+  <p>{{ message }}</p>
+}

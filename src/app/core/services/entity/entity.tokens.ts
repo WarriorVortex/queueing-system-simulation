@@ -5,7 +5,7 @@ import {
   RejectionDiscipline,
   RequestSelectionDiscipline
 } from '@app/models/disciplines';
-import {RequestIntervalRule, ServiceTimeRule} from '@app/models/rules';
+import {RequestIntervalRule, RuleParams, ServiceTimeRule} from '@app/models/rules';
 
 export const DEVICE_SELECTION_DISCIPLINE = new InjectionToken<DeviceSelectionDiscipline>(
   'DEVICE_SELECTION_DISCIPLINE',
@@ -27,6 +27,20 @@ export const REQUEST_INTERVAL_RULE = new InjectionToken<RequestIntervalRule>(
   'REQUEST_INTERVAL_RULE',
 );
 
+export const REQUEST_INTERVAL_RULE_PARAMS = new InjectionToken<RuleParams>(
+  'REQUEST_INTERVAL_RULE_PARAMS',
+  {
+    factory: () => ({})
+  }
+);
+
 export const SERVICE_TIME_RULE = new InjectionToken<ServiceTimeRule>(
   'SERVICE_TIME_RULE',
+);
+
+export const SERVICE_TIME_RULE_PARAMS = new InjectionToken<RuleParams>(
+  'SERVICE_TIME_RULE_PARAMS',
+  {
+    factory: () => ({})
+  }
 );

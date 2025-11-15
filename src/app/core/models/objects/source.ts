@@ -3,6 +3,7 @@ import {RequestIntervalRule} from '../rules';
 
 export class Source {
   private generatedNumber = 1;
+  private nextRequestArrivalTime: number | null = null;
 
   constructor(
     public readonly id: number,
@@ -11,6 +12,11 @@ export class Source {
 
   public generate(currentTime: number): Request {
     const nextInterval = this.calculateInterval(currentTime);
-    return new Request(this.generatedNumber++, this.id, currentTime + nextInterval);
+    this.nextRequestArrivalTime = currentTime + nextInterval;
+    return new Request(this.generatedNumber++, this.id, this.nextRequestArrivalTime);
+  }
+
+  public get nextArrivalTime(): number | null {
+    return this.nextRequestArrivalTime;
   }
 }
