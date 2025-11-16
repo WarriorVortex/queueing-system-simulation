@@ -1,4 +1,4 @@
-export class SimulationEvent {
+export abstract class SimulationEvent {
   constructor(
     public readonly time: number
   ) {}

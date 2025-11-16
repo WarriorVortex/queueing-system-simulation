@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require('electron');
+const { isDevMode } = require("@angular/core");
 
 let browserWindow;
 
@@ -8,11 +9,19 @@ const createWindow = () => {
     height: 600 * 1.2,
     backgroundColor: '#FFFFFF',
     autoHideMenuBar: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   });
 
-  const targetDir = 'queueing-system-simulation/browser';
-  browserWindow.loadURL(`file://${__dirname}/dist/${targetDir}/index.html`);
-  browserWindow.webContents.openDevTools();
+  if (isDevMode()) {
+    browserWindow.loadURL('http://localhost:4200');
+    browserWindow.webContents.openDevTools();
+  } else {
+    const targetDir = 'queueing-system-simulation/browser';
+    browserWindow.loadURL(`file://${__dirname}/dist/${targetDir}/index.html`);
+  }
 
   browserWindow.on('closed', () => {
     browserWindow = null;

@@ -1,6 +1,7 @@
-export * from './special-events'
-export * from './simulation-event';
-export * from './request-rejection';
-export * from './request-generation';
-export * from './service-start';
-export * from './buffering-event';
+import EventUtils from './event.utils';
+
+export * from './types';
+export * from './event-type';
+export * from './event.utils';
+
+export default EventUtils;

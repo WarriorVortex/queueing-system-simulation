@@ -1,5 +1,6 @@
 import {Device} from '@app/models';
 import {SpecialSimulationEvent} from './special-simulation-event';
+import EventMetadata from '../../metadata';
 
 export class DeviceRelease extends SpecialSimulationEvent {
   constructor(
@@ -9,3 +10,5 @@ export class DeviceRelease extends SpecialSimulationEvent {
     super(time);
   }
 }
+
+EventMetadata.writeType(DeviceRelease, 'deviceRelease');

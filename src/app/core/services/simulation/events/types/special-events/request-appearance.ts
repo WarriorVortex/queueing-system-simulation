@@ -1,5 +1,6 @@
 import {Request} from '@app/models'
 import {SpecialSimulationEvent} from "./special-simulation-event";
+import EventMetadata from '../../metadata';
 
 export class RequestAppearance extends SpecialSimulationEvent {
   constructor(
@@ -9,3 +10,5 @@ export class RequestAppearance extends SpecialSimulationEvent {
     super(time);
   }
 }
+
+EventMetadata.writeType(RequestAppearance, 'requestAppearance');

@@ -11,7 +11,8 @@
     "electron": "electron . --trace-warnings",
     "electron-build": "ng build --configuration production",
     "electron-start": "npm run electron-build && npm run electron",
-    "clear": "rm -rf ./dist ./node_modules ./.angular ./package-lock.json"
+    "clear": "rm -rf ./dist ./node_modules ./.angular ./package-lock.json",
+    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:4200 && npm run electron\""
   },
   "prettier": {
     "printWidth": 100,
@@ -42,6 +43,7 @@
     "@angular/cli": "^20.3.7",
     "@angular/compiler-cli": "^20.3.0",
     "@types/jasmine": "~5.1.0",
+    "concurrently": "^9.2.1",
     "electron": "^39.0.0",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
@@ -50,6 +52,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "less": "^4.4.2",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "wait-on": "^9.0.3"
   }
 }

@@ -1,17 +1,8 @@
 import {inject, Injectable} from '@angular/core';
 import {SimulationService} from '../simulation.service';
-import {map, Observable} from 'rxjs';
+import {filter, map, Observable} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {
-  BufferingEvent,
-  DeviceRelease,
-  RequestAppearance,
-  RequestGeneration,
-  RequestRejection,
-  ServiceStart,
-  SimulationEnd,
-  SimulationEvent,
-} from '../events';
+import {getEventType, SimulationEvent,} from '../events';
 import {FORMAT_MESSAGE_CONFIG} from '@app/services/simulation';
 
 @Injectable({
@@ -25,6 +16,7 @@ export class SimulationMessageService extends Observable<string> {
     super(subscriber => {
       const subscription = this.simulation.simulationEvent$.pipe(
         map(this.formMessage.bind(this)),
+        filter(message => message !== undefined),
         takeUntilDestroyed()
       ).subscribe(subscriber);
 
@@ -32,28 +24,11 @@ export class SimulationMessageService extends Observable<string> {
     });
   }
 
-  private formMessage(event: SimulationEvent): string {
-    if (event instanceof BufferingEvent) {
-      return this.formatMessage['buffering'](event);
+  private formMessage(event: SimulationEvent): string | undefined {
+    const eventType = getEventType(event);
+    if (eventType === undefined) {
+      return undefined;
     }
-    if (event instanceof RequestGeneration) {
-      return this.formatMessage['requestGeneration'](event);
-    }
-    if (event instanceof RequestRejection) {
-      return this.formatMessage['rejection'](event);
-    }
-    if (event instanceof ServiceStart) {
-      return this.formatMessage['serviceStart'](event);
-    }
-    if (event instanceof DeviceRelease) {
-      return this.formatMessage['deviceRelease'](event);
-    }
-    if (event instanceof RequestAppearance) {
-      return this.formatMessage['requestAppearance'](event);
-    }
-    if (event instanceof SimulationEnd) {
-      return this.formatMessage['simulationEnd'](event);
-    }
-    return `Неизвестное событие: ${JSON.stringify(event)}`;
+    return this.formatMessage[eventType]?.(event as any);
   }
 }

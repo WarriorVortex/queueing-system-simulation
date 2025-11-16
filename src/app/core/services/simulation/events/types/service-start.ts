@@ -1,5 +1,6 @@
 import {SimulationEvent} from './simulation-event';
 import {Device} from '@app/models';
+import EventMetadata from '../metadata';
 
 export class ServiceStart extends SimulationEvent {
   constructor(
@@ -9,3 +10,5 @@ export class ServiceStart extends SimulationEvent {
     super(time);
   }
 }
+
+EventMetadata.writeType(ServiceStart, 'serviceStart');

@@ -1,6 +1,6 @@
 import {Request} from '@app/models';
-import {FormatMessageConfig} from './simulation-message.tokens';
-import {SpecialSimulationEvent} from '../events';
+import {FormatMessageConfig} from './simulation-message.types';
+import {SpecialSimulationEvent} from '../events/types';
 
 const DefaultFormatMessage: FormatMessageConfig = {
   'buffering': event => {
@@ -35,7 +35,7 @@ const DefaultFormatMessage: FormatMessageConfig = {
     const { sourceId } = request;
     return `${formatStepInfo(event)} Заявка ${formatRequest(request)} поступила от И${sourceId}`;
   },
-  'simulationEnd': event => `${formatStepInfo(event)} Конец симуляции`
+  'simulationEnd': event => `${formatStepInfo(event)} Конец моделирования`,
 }
 export default DefaultFormatMessage;
 

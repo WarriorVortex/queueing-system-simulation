@@ -1,5 +1,6 @@
 import {SimulationEvent} from './simulation-event';
 import {Request} from '@app/models';
+import EventMetadata from '../metadata';
 
 export class BufferingEvent extends SimulationEvent {
   constructor(
@@ -9,3 +10,5 @@ export class BufferingEvent extends SimulationEvent {
     super(time);
   }
 }
+
+EventMetadata.writeType(BufferingEvent, 'buffering')
