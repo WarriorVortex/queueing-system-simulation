@@ -1,5 +1,5 @@
 import {computed, DestroyRef, inject, Injectable, Signal, signal} from '@angular/core';
-import {EntityService} from '@app/services/entity';
+import {EntityGeneratorService, EntityService} from '@app/services/entity';
 import DEFAULT_PARAMS, {SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
 import {
   Buffer,
@@ -13,21 +13,21 @@ import {
 import {
   compareEvents,
   createEvent,
-  DeviceRelease, hasEventType,
+  DeviceRelease,
+  hasEventType,
   RequestAppearance,
   RequestRejection,
   SimulationEvent,
   SpecialSimulationEvent
 } from './events';
-import {interval, Subject, take, takeUntil, takeWhile} from 'rxjs';
-import {EntityGeneratorService} from './entity-generator.service';
-import {SimulationState} from './simulation-state';
+import {interval, Observable, Subject, take, takeWhile} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SimulationState} from './simulation-state';
 
 @Injectable({
   providedIn: 'root',
 })
-export class SimulationService {
+export class SimulationService extends Observable<SimulationEvent> {
   private destroyRef = inject(DestroyRef);
   private entityService = inject(EntityService);
   private entityGeneratorService = inject(EntityGeneratorService);
@@ -49,13 +49,11 @@ export class SimulationService {
 
   private readonly _simulationState = signal<SimulationState>(SimulationState.INITIAL);
   public readonly simulationState = this._simulationState.asReadonly();
-  public readonly isEnded: Signal<boolean>;
+  public readonly isEnded!: Signal<boolean>;
   public readonly isConfigured: Signal<boolean>;
   public readonly isStarted: Signal<boolean>;
 
-  private readonly _simulationEvent$ = new Subject<SimulationEvent>();
-  public readonly simulationEvent$ = this._simulationEvent$.asObservable();
-
+  private readonly simulationEvent$ = new Subject<SimulationEvent>();
   private readonly _closestEventSet = new Set<SpecialSimulationEvent>();
   private readonly _rejectionQueue = new Array<RequestRejection>();
 
@@ -77,18 +75,18 @@ export class SimulationService {
   ]);
 
   constructor() {
+    super(subscriber => {
+      const subscription = this.simulationEvent$.pipe(
+        takeUntilDestroyed()
+      ).subscribe(subscriber);
+      return subscription.unsubscribe;
+    });
     if (this.defaultParams.autoconfig) {
       this.configureSimulation();
     }
     this.isEnded = computed(() => this.simulationState() === SimulationState.ENDED);
-    this.isConfigured = computed(() => {
-      const state = this.simulationState();
-      return this.CONFIG_STATES.has(state);
-    });
-    this.isStarted = computed(() => {
-      const state = this.simulationState();
-      return this.START_STATES.has(state);
-    });
+    this.isConfigured = computed(() => this.CONFIG_STATES.has(this.simulationState()));
+    this.isStarted = computed(() => this.START_STATES.has(this.simulationState()));
   }
 
   public configureSimulation() {
@@ -199,7 +197,7 @@ export class SimulationService {
 
     if (this.selectionDispatcher.isFreeDevice()) {
       const device = this.selectionDispatcher.serveRequest(currentTime, request)!;
-      this.emitDeviceServe(device);
+      this.emitDeviceServe(device, request);
       return;
     }
 
@@ -229,7 +227,8 @@ export class SimulationService {
   }
 
   private processDeviceRelease(event: DeviceRelease) {
-    event.device.finishService();
+    const { servicedRequest: served, finishService } = event.device;
+    finishService();
 
     if (this._buffer!.isEmpty) {
       return;
@@ -241,13 +240,13 @@ export class SimulationService {
       return;
     }
 
-    this.emitDeviceServe(device);
+    this.emitDeviceServe(device, served!);
   }
 
-  private emitDeviceServe(device: Device) {
+  private emitDeviceServe(device: Device, served: Request) {
     const currentTime = this._currentTime();
 
-    this.pushEvent(createEvent('deviceRelease', device.serviceEndTime!, device));
+    this.pushEvent(createEvent('deviceRelease', device.serviceEndTime!, device, served));
     this.emitEvent(createEvent('serviceStart', currentTime, device));
   }
 
@@ -280,13 +279,13 @@ export class SimulationService {
 
   private createIndexedSources() {
     const length = this.sourcesNumber();
-    const generator = this.entityGeneratorService.generateIndexedSources(length);
+    const generator = this.entityGeneratorService.generateIndexedSources(length, 1);
     return new Map(generator);
   }
 
   private createIndexedDevices() {
     const length = this.devicesNumber();
-    const generator = this.entityGeneratorService.generateIndexedDevices(length);
+    const generator = this.entityGeneratorService.generateIndexedDevices(length, 1);
     return new Map(generator);
   }
 
@@ -312,6 +311,6 @@ export class SimulationService {
   }
 
   private emitEvent(event: SimulationEvent) {
-    this._simulationEvent$.next(event);
+    this.simulationEvent$.next(event);
   }
 }

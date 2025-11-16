@@ -22,8 +22,7 @@ const DefaultFormatMessage: FormatMessageConfig = {
     return `П${id} начал обслуживание заявки ${formattedRequest} (освободится в t=${serviceEndTime!})`;
   },
   'deviceRelease': event => {
-    const { device } = event;
-    const { id, isFree } = device;
+    const { id, isFree } = event.device;
     let message = `П${id} завершил обслуживание`;
     if (isFree) {
       message += ` и отправлен в простой`;

@@ -1,8 +1,10 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, signal} from '@angular/core';
-import {SimulationMessageService, SimulationService} from '@app/services/simulation';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal} from '@angular/core';
+import {hasEventType, SimulationMessageService, SimulationService} from '@app/services/simulation';
 import {FormsModule} from '@angular/forms';
 import {REQUEST_INTERVAL_RULE_PARAMS, SERVICE_TIME_RULE_PARAMS} from '@app/services/entity';
 import {BufferBlockComponent, DevicesBlockComponent, EventsCalendarComponent, LogBlockComponent} from '@app/components';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {debounceTime, filter} from 'rxjs';
 
 @Component({
   selector: 'app-main-page',
@@ -43,14 +45,24 @@ export class MainPageComponent {
 
   constructor() {
     this.initChangeOnEvent();
+    this.initOnSimulationEndMessage();
   }
 
   private initChangeOnEvent() {
-    this.simulationMessage
-      .subscribe(message => {
-        this._messages.push(message);
-        this.changeDetector.markForCheck();
-      });
+    this.simulationMessage.pipe(
+      takeUntilDestroyed()
+    ).subscribe(message => {
+      this._messages.push(message);
+      this.changeDetector.markForCheck();
+    });
+  }
+
+  private initOnSimulationEndMessage() {
+    this.simulation.pipe(
+      filter(event => hasEventType(event, 'simulationEnd')),
+      debounceTime(200),
+      takeUntilDestroyed()
+    ).subscribe(() => alert('Симуляция была завершена!'));
   }
 
   protected get devices() {

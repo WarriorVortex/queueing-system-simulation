@@ -18,7 +18,7 @@ export default class EventUtils {
     'requestGeneration': ([ time, generated ]) => new RequestGeneration(time, generated),
     'rejection': ([ time, rejected ]) => new RequestRejection(time, rejected),
     'serviceStart': ([ time, device ]) => new ServiceStart(time, device),
-    'deviceRelease': ([ time, device ]) => new DeviceRelease(time, device),
+    'deviceRelease': ([ time, device, served ]) => new DeviceRelease(time, device, served),
     'requestAppearance': ([ time, device ]) => new RequestAppearance(time, device),
     'simulationEnd': ([ time  ]) => new SimulationEnd(time),
   } satisfies Record<SimulationEventType, (...args: any[]) => SimulationEvent>;
@@ -27,7 +27,7 @@ export default class EventUtils {
   static create(type: 'requestGeneration', time: number, generated: Request): RequestGeneration;
   static create(type: 'rejection', time: number, rejected: Request): RequestRejection;
   static create(type: 'serviceStart', time: number, device: Device): ServiceStart;
-  static create(type: 'deviceRelease', time: number, device: Device): DeviceRelease;
+  static create(type: 'deviceRelease', time: number, device: Device, served: Request): DeviceRelease;
   static create(type: 'requestAppearance', time: number, request: Request): RequestAppearance;
   static create(type: 'simulationEnd', time: number): SimulationEnd;
 

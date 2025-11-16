@@ -14,7 +14,7 @@ export class SimulationMessageService extends Observable<string> {
 
   constructor() {
     super(subscriber => {
-      const subscription = this.simulation.simulationEvent$.pipe(
+      const subscription = this.simulation.pipe(
         map(this.formMessage.bind(this)),
         filter(message => message !== undefined),
         takeUntilDestroyed()

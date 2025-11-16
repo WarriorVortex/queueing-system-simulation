@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {EntityService} from '@app/services/entity';
+import {EntityService} from '@app/services/entity/index';
 
 type EntityWithId = { readonly id: number };
 
@@ -9,27 +9,27 @@ type EntityWithId = { readonly id: number };
 export class EntityGeneratorService {
   private entityService = inject(EntityService);
 
-  public *generateDevices(count: number) {
+  public *generateDevices(count: number, startIndex: number = 0) {
     for (let i = 0; i < count; ++i) {
-      yield this.entityService.createDevice(i + 1);
+      yield this.entityService.createDevice(i + startIndex);
     }
   }
 
-  public *generateSources(count: number) {
+  public *generateSources(count: number, startIndex: number = 0) {
     for (let i = 0; i < count; ++i) {
-      yield this.entityService.createSource(i + 1);
+      yield this.entityService.createSource(i + startIndex);
     }
   }
 
-  public *generateIndexedDevices(count: number) {
-    const devices = this.generateDevices(count);
+  public *generateIndexedDevices(count: number, startIndex: number = 0) {
+    const devices = this.generateDevices(count, startIndex);
     for (const entry of this.createEntries(devices)) {
       yield entry;
     }
   }
 
-  public *generateIndexedSources(count: number) {
-    const sources = this.generateSources(count);
+  public *generateIndexedSources(count: number, startIndex: number = 0) {
+    const sources = this.generateSources(count, startIndex);
     for (const entry of this.createEntries(sources)) {
       yield entry;
     }

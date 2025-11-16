@@ -6,7 +6,7 @@
         'device-cell-free': device.isFree
       }"
     >
-      <span class="device-cell__number">{{ $index + 1 }}</span>
+      <span class="device-cell__number">{{ device.id }}</span>
       <span class="device-cell__content">
         {{ (device.servicedRequest | formatRequest) ?? 'Простой' }}
       </span>
