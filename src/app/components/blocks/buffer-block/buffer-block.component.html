@@ -1,0 +1,15 @@
+<div class="buffer-container">
+  @for (cell of bufferCells(); track $index) {
+    <div [class]="{
+        'buffer-cell': true,
+        'buffer-cell-occupied': cell !== null,
+        'buffer-cell-empty': cell === null
+      }"
+    >
+      <span class="buffer-cell__number">{{ $index + 1 }}</span>
+      <span class="buffer-cell__content">
+        {{ (cell | formatRequest) ?? 'Пусто' }}
+      </span>
+    </div>
+  }
+</div>

@@ -5,6 +5,7 @@ let browserWindow;
 
 const createWindow = () => {
   browserWindow = new BrowserWindow({
+    title: 'Симуляция работы модели СМО',
     width: 800 * 1.2,
     height: 600 * 1.2,
     backgroundColor: '#FFFFFF',
@@ -12,7 +13,7 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
-    }
+    },
   });
 
   if (isDevMode()) {

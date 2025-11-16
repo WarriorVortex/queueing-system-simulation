@@ -1,8 +1,8 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, signal} from '@angular/core';
 import {SimulationMessageService, SimulationService} from '@app/services/simulation';
 import {FormsModule} from '@angular/forms';
 import {REQUEST_INTERVAL_RULE_PARAMS, SERVICE_TIME_RULE_PARAMS} from '@app/services/entity';
-import {EventsCalendarComponent, LogBlockComponent} from '@app/components';
+import {BufferBlockComponent, DevicesBlockComponent, EventsCalendarComponent, LogBlockComponent} from '@app/components';
 
 @Component({
   selector: 'app-main-page',
@@ -10,7 +10,9 @@ import {EventsCalendarComponent, LogBlockComponent} from '@app/components';
     FormsModule,
     EventsCalendarComponent,
     LogBlockComponent,
-    EventsCalendarComponent
+    EventsCalendarComponent,
+    BufferBlockComponent,
+    DevicesBlockComponent
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.less',
@@ -24,9 +26,11 @@ export class MainPageComponent {
   protected currentStep = this.simulation.currentStep;
   protected currentTime = this.simulation.currentTime;
 
-  private readonly _messages: string[] = [];
+  private _messages: string[] = [];
 
   protected simulationStep = signal(10);
+
+  protected simulationInterval = signal(0);
   protected simulationEndTime = this.simulation.simulationEndTime;
   protected sourcesNumber = this.simulation.sourcesNumber;
   protected devicesNumber = this.simulation.devicesNumber;
@@ -34,7 +38,8 @@ export class MainPageComponent {
   protected intervalParams = inject(REQUEST_INTERVAL_RULE_PARAMS) as { a: number, b: number };
   protected serviceTimeParams = inject(SERVICE_TIME_RULE_PARAMS) as { lambda: number };
 
-  protected isConfigured = this.simulation.isConfigured;
+  protected isStarted = this.simulation.isStarted;
+  protected isEnded = this.simulation.isEnded;
 
   constructor() {
     this.initChangeOnEvent();
@@ -49,15 +54,15 @@ export class MainPageComponent {
   }
 
   protected get devices() {
-    return this.isConfigured()
-      ? this.simulation.devices
-      : [];
+    return this.simulation.devices;
   }
 
   protected get sources() {
-    return this.isConfigured()
-      ? this.simulation.sources
-      : [];
+    return this.simulation.sources;
+  }
+
+  protected get bufferCells() {
+    return [...this.simulation.buffer.cells];
   }
 
   protected get messages() {
@@ -66,20 +71,35 @@ export class MainPageComponent {
 
   protected startSimulation() {
     this.simulation.configureSimulation();
+    this._messages = [];
     this._messages.push(`Параметры моделирования заданы`);
     this._messages.push(`Старт моделирования`);
     this.simulation.startSimulation();
   }
 
   protected simulateNextStep() {
-    this.simulation.processStep();
+    this.checkStepAvailable();
+    this.simulation.nextStep();
   }
 
-  protected simulateAllSteps() {
-    this.simulation.processAllSteps();
+  protected simulateAllSteps(delay?: number) {
+    this.checkStepAvailable();
+    this.simulation.fullSimulate(delay);
   }
 
-  protected simulateNSteps(n: number) {
-    this.simulation.processNSteps(n);
+  protected simulateNSteps(n: number, delay?: number) {
+    this.checkStepAvailable();
+    this.simulation.nextNSteps(n, delay);
+  }
+
+  private checkStepAvailable() {
+    if (!this.isStarted()) {
+      alert('Симуляция не запущена!');
+      throw new Error('Simulation not started');
+    }
+    if (this.isEnded()) {
+      alert('Симуляция была завершена!');
+      throw new Error('Simulation has already finished');
+    }
   }
 }

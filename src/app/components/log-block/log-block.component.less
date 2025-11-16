@@ -1,16 +1,56 @@
+@logs-font-size: 12px;
+@border-color: #e0e0e0;
+@scrollbar-color: #c1c1c1;
+
 :host {
   display: block;
 }
 
 .logs {
-  max-height: max(100px, 10vh);
-  overflow-y: scroll;
-  width: var(--inner-width);
-  scrollbar-width: thin;
+  min-height: calc(2 * @logs-font-size);
+  max-height: inherit;
+  height: inherit;
+  overflow-y: auto;
   background: white;
+  border: 1px solid @border-color;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: @logs-font-size;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  line-height: 1.4;
 
-  &__message {
-    margin-block: 4px;
-    margin-left: 8px;
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: @scrollbar-color;
+    border-radius: 4px;
+
+    &:hover {
+      background: darken(@scrollbar-color, 10%);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: @scrollbar-color #f1f1f1;
+
+  p, span {
+    margin: 2px 0;
+    padding: 2px 4px;
+    word-break: break-word;
+
+    &:nth-child(odd) {
+      background-color: #f8f8f8;
+    }
+
+    &:hover {
+      background-color: #e3f2fd;
+    }
   }
 }

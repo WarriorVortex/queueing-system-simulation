@@ -28,30 +28,33 @@
     <span>Время моделирования: </span>
     <input type="number" min="0" [(ngModel)]="simulationEndTime"/>
   </div>
+  <div class="simulation-parameters__input">
+    <span>Скорость моделирования: </span>
+    <input type="range" min="0" max="5000" step="100" [(ngModel)]="simulationInterval"/>
+  </div>
 </div>
 <button (click)="startSimulation()">
-  Старт
+  {{ isStarted() ? 'Перезапустить' : 'Старт' }}
 </button>
 <button (click)="simulateNextStep()" class="next-step-btn">
   Следующий шаг
 </button>
-<button (click)="simulateAllSteps()" class="next-step-btn">
+@let interval = simulationInterval();
+<button (click)="simulateAllSteps(interval)" class="next-step-btn">
   Полное моделирование
 </button>
 @let n = simulationStep();
-<button (click)="simulateNSteps(n)" class="next-step-btn">
-  Следующие {{ n }} шагов
+<button (click)="simulateNSteps(n, interval)" class="next-step-btn">
+  Авто ({{ n }} шагов)
 </button>
-<input type="number" [(ngModel)]="simulationStep" min="0"/>
 
 <p>Шаг: {{ currentStep() }}</p>
 <p>Время: {{ currentTime() }}</p>
 
-<app-events-calendar
-  class="events-calendar"
-  [sources]="sources"
-  [devices]="devices"
-></app-events-calendar>
+<app-buffer-block [bufferCells]="bufferCells"></app-buffer-block>
+<app-devices-block [devices]="devices"></app-devices-block>
+
+<app-events-calendar [sources]="sources" [devices]="devices"></app-events-calendar>
 
 <p>Сообщения:</p>
-<app-log-block [logs]="messages"></app-log-block>
+<app-log-block [style.max-height.px]="200" [logs]="messages"></app-log-block>

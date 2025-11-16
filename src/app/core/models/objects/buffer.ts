@@ -53,4 +53,8 @@ export class Buffer {
   public get requests(): Request[] {
     return this.requestQueue.filter(value => value !== null);
   }
+
+  public get cells(): (Request | null)[] {
+    return [...this.requestQueue];
+  }
 }

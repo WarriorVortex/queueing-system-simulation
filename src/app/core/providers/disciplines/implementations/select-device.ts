@@ -1,24 +1,22 @@
 import {DeviceSelectionDiscipline} from '@app/models/disciplines';
+import {Device} from '@app/models';
 
-let lastDeviceIndex = -1;
+let lastIndex = -1;
 
-export const selectDevice: DeviceSelectionDiscipline = (devices, _) => {
-  if (lastDeviceIndex === devices.length) {
-    lastDeviceIndex = 0;
+function findFreeDevice(devices: Device[], start?: number, end?: number) {
+  return devices
+    .slice(start, end)
+    .find(device => device.isFree);
+}
+
+export const selectDevice: DeviceSelectionDiscipline = (devices) => {
+  if (lastIndex === devices.length) {
+    lastIndex = 0;
   }
 
-  let foundDevice = devices
-    .slice(lastDeviceIndex + 1)
-    .find(device => device.isFree);
-
+  let foundDevice = findFreeDevice(devices, lastIndex + 1) ?? findFreeDevice(devices, 0, lastIndex + 1);
   if (foundDevice !== undefined) {
-    lastDeviceIndex++;
-    return foundDevice;
+    ++lastIndex;
   }
-
-  foundDevice = devices
-    .slice(0, lastDeviceIndex + 1)
-    .find(device => device.isFree);
-
   return foundDevice ?? null;
 }

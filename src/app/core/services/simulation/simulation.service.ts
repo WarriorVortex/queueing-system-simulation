@@ -1,4 +1,4 @@
-import {computed, inject, Injectable, Signal, signal} from '@angular/core';
+import {computed, DestroyRef, inject, Injectable, Signal, signal} from '@angular/core';
 import {EntityService} from '@app/services/entity';
 import DEFAULT_PARAMS, {SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
 import {
@@ -19,14 +19,16 @@ import {
   SimulationEvent,
   SpecialSimulationEvent
 } from './events';
-import {Subject} from 'rxjs';
+import {interval, Subject, take, takeUntil, takeWhile} from 'rxjs';
 import {EntityGeneratorService} from './entity-generator.service';
 import {SimulationState} from './simulation-state';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SimulationService {
+  private destroyRef = inject(DestroyRef);
   private entityService = inject(EntityService);
   private entityGeneratorService = inject(EntityGeneratorService);
   private readonly defaultParams: SimulationParams = {
@@ -122,15 +124,18 @@ export class SimulationService {
   }
 
   public startSimulation() {
+    this._currentTime.set(0);
     const currentTime = this.simulationEndTime();
     this.pushEvent(createEvent('simulationEnd', currentTime));
 
     for (const source of this._sources.values()) {
       this.generateNextRequest(source.id);
     }
+
+    this._simulationState.set(SimulationState.STARTED);
   }
 
-  public processStep() {
+  private processStep() {
     const event = this.findNextEvent();
     this._currentTime.set(event.time);
     this._currentStep.update(i => i + 1);
@@ -149,14 +154,41 @@ export class SimulationService {
     this.popEvent(event);
   }
 
-  public processNSteps(n: number = 1) {
+  public nextStep() {
+    this.processStep();
+  }
+
+  private processNSteps(n: number = 1) {
     while (n-- > 0 && !this.isEnded()) {
       this.processStep();
     }
   }
 
-  public processAllSteps() {
+  public nextNSteps(n: number = 1, delay?: number) {
+    if (!delay || delay <= 0) {
+      this.processNSteps(n);
+      return;
+    }
+    interval(delay).pipe(
+      take(n),
+      takeWhile(() => !this.isEnded()),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => this.processStep());
+  }
+
+  private processAllSteps() {
     this.processNSteps(Infinity);
+  }
+
+  public fullSimulate(delay?: number) {
+    if (!delay || delay <= 0) {
+      this.processAllSteps();
+      return;
+    }
+    interval(delay).pipe(
+      takeWhile(() => !this.isEnded()),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => this.processStep());
   }
 
   private processRequestAppearance(event: RequestAppearance) {

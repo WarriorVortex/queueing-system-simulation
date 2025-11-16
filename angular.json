@@ -15,6 +15,10 @@
           "displayBlock": true,
           "changeDetection": "OnPush",
           "style": "less"
+        },
+        "@schematics/angular:pipe": {
+          "path": "src/app/pipes",
+          "typeSeparator": "."
         }
       },
       "root": "",
