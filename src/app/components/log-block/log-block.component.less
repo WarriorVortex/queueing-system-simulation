@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+.logs {
+  max-height: max(100px, 10vh);
+  overflow-y: scroll;
+  width: var(--inner-width);
+  scrollbar-width: thin;
+  background: white;
+
+  &__message {
+    margin-block: 4px;
+    margin-left: 8px;
+  }
+}

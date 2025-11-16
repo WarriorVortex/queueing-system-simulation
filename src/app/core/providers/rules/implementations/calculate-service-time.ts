@@ -2,8 +2,8 @@ import {ServiceTimeRule} from '@app/models/rules';
 
 export const calculateServiceTime: ServiceTimeRule = () => {
   const { lambda } = ServiceTimeParams;
-  const x = Math.random();
-  return 1 - Math.exp(-lambda * x);
+  const random = Math.random();
+  return Math.log(1 - random) / -lambda;
 }
 
 export const ServiceTimeParams = {

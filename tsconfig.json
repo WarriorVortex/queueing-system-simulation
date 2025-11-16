@@ -11,8 +11,10 @@
       "@app/services/*": ["src/app/core/services/*"],
       "@app/providers": ["src/app/core/providers"],
       "@app/providers/*": ["src/app/core/providers/*"],
-      "@app/utils": ["src/app/core/utils"],
-      "@app/utils/*": ["src/app/core/utils/*"]
+      "@app/components": ["src/app/components"],
+      "@app/components/*": ["src/app/components/*"],
+      "@app/pages": ["src/app/pages"],
+      "@app/pages/*": ["src/app/pages/*"]
     },
     "strict": true,
     "noImplicitOverride": true,

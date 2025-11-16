@@ -19,4 +19,8 @@ export class Source {
   public get nextArrivalTime(): number | null {
     return this.nextRequestArrivalTime;
   }
+
+  public get isActive() {
+    return this.nextArrivalTime !== null;
+  }
 }

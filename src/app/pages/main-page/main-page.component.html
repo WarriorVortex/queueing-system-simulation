@@ -1,28 +1,32 @@
 <div class="simulation-parameters">
   <p class="simulation-parameters__title">Параметры моделирования</p>
-  <div>
+  <div class="simulation-parameters__input">
     <span>Количество приборов: </span>
     <input type="number" min="1" [(ngModel)]="devicesNumber"/>
   </div>
-  <div>
+  <div class="simulation-parameters__input">
     <span>Количество источников: </span>
     <input type="number" min="1" [(ngModel)]="sourcesNumber"/>
   </div>
-  <div>
+  <div class="simulation-parameters__input">
     <span>Ёмкость буфера: </span>
     <input type="number" min="1" [(ngModel)]="bufferCapacity"/>
   </div>
-  <div>
+  <div class="simulation-parameters__input">
     <span>Минимальный интервал: </span>
     <input type="number" min="0" [(ngModel)]="intervalParams.a"/>
   </div>
-  <div>
+  <div class="simulation-parameters__input">
     <span>Максимальный интервал: </span>
     <input type="number" min="0" [(ngModel)]="intervalParams.b"/>
   </div>
-  <div>
+  <div class="simulation-parameters__input">
     <span>Интенсивность обслуживания: </span>
     <input type="number" min="0" max="1" [(ngModel)]="serviceTimeParams.lambda"/>
+  </div>
+  <div class="simulation-parameters__input">
+    <span>Время моделирования: </span>
+    <input type="number" min="0" [(ngModel)]="simulationEndTime"/>
   </div>
 </div>
 <button (click)="startSimulation()">
@@ -43,9 +47,11 @@
 <p>Шаг: {{ currentStep() }}</p>
 <p>Время: {{ currentTime() }}</p>
 
+<app-events-calendar
+  class="events-calendar"
+  [sources]="sources"
+  [devices]="devices"
+></app-events-calendar>
+
 <p>Сообщения:</p>
-<div class="logs">
-  @for (message of messages; track $index) {
-    <p class="logs__message">{{ message }}</p>
-  }
-</div>
+<app-log-block [logs]="messages"></app-log-block>

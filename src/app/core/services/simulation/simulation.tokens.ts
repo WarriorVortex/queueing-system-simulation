@@ -8,15 +8,19 @@ export interface SimulationParams {
   autoconfig: boolean,
 }
 
-export const DEFAULT_SIMULATION_PARAMS = new InjectionToken<SimulationParams>(
+export const SIMULATION_PARAMS = new InjectionToken<Partial<SimulationParams>>(
   'DEFAULT_SIMULATION_PARAMS',
   {
-    factory: () => ({
-      devicesNumber: 3,
-      sourcesNumber: 3,
-      bufferCapacity: 3,
-      endTime: 100,
-      autoconfig: false
-    })
+    factory: () => DEFAULT_PARAMS
   }
 );
+
+
+const DEFAULT_PARAMS: SimulationParams = {
+  devicesNumber: 3,
+  sourcesNumber: 3,
+  bufferCapacity: 3,
+  endTime: 100,
+  autoconfig: false,
+};
+export default DEFAULT_PARAMS;

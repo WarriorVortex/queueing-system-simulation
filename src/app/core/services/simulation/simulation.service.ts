@@ -1,6 +1,6 @@
 import {computed, inject, Injectable, Signal, signal} from '@angular/core';
 import {EntityService} from '@app/services/entity';
-import {DEFAULT_SIMULATION_PARAMS} from './simulation.tokens';
+import DEFAULT_PARAMS, {SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
 import {
   Buffer,
   BufferingDispatcher,
@@ -29,7 +29,10 @@ import {SimulationState} from './simulation-state';
 export class SimulationService {
   private entityService = inject(EntityService);
   private entityGeneratorService = inject(EntityGeneratorService);
-  private readonly defaultParams = inject(DEFAULT_SIMULATION_PARAMS);
+  private readonly defaultParams: SimulationParams = {
+    ...DEFAULT_PARAMS,
+    ...inject(SIMULATION_PARAMS),
+  };
 
   public readonly devicesNumber = signal(this.defaultParams.devicesNumber);
   public readonly sourcesNumber = signal(this.defaultParams.sourcesNumber);
@@ -44,9 +47,9 @@ export class SimulationService {
 
   private readonly _simulationState = signal<SimulationState>(SimulationState.INITIAL);
   public readonly simulationState = this._simulationState.asReadonly();
-  public readonly isEnded!: Signal<boolean>;
-  public readonly isConfigured!: Signal<boolean>;
-  public readonly isStarted!: Signal<boolean>;
+  public readonly isEnded: Signal<boolean>;
+  public readonly isConfigured: Signal<boolean>;
+  public readonly isStarted: Signal<boolean>;
 
   private readonly _simulationEvent$ = new Subject<SimulationEvent>();
   public readonly simulationEvent$ = this._simulationEvent$.asObservable();
@@ -61,13 +64,29 @@ export class SimulationService {
   private bufferingDispatcher!: BufferingDispatcher;
   private selectionDispatcher!: SelectionDispatcher;
 
+  private readonly CONFIG_STATES = new Set([
+    SimulationState.CONFIGURED,
+    SimulationState.STARTED,
+    SimulationState.ENDED
+  ]);
+  private readonly START_STATES = new Set([
+    SimulationState.STARTED,
+    SimulationState.ENDED
+  ]);
+
   constructor() {
     if (this.defaultParams.autoconfig) {
       this.configureSimulation();
     }
     this.isEnded = computed(() => this.simulationState() === SimulationState.ENDED);
-    this.isConfigured = computed(() => this.simulationState() === SimulationState.CONFIGURED);
-    this.isStarted = computed(() => this.simulationState() === SimulationState.STARTED);
+    this.isConfigured = computed(() => {
+      const state = this.simulationState();
+      return this.CONFIG_STATES.has(state);
+    });
+    this.isStarted = computed(() => {
+      const state = this.simulationState();
+      return this.START_STATES.has(state);
+    });
   }
 
   public configureSimulation() {
@@ -89,11 +108,13 @@ export class SimulationService {
   }
 
   public get devices() {
-    return [...this._devices.values()];
+    const devices = this._devices;
+    return devices ? [...devices.values()] : [];
   }
 
   public get sources() {
-    return [...this._devices.values()];
+    const sources = this._sources;
+    return sources ? [...sources.values()] : sources;
   }
 
   public get buffer() {
@@ -166,7 +187,7 @@ export class SimulationService {
 
   private generateNextRequest(sourceId: number) {
     const currentTime = this._currentTime();
-    const source = this._sources.get(sourceId)!;
+    const source = this._sources!.get(sourceId)!;
     const request = source.generate(currentTime);
 
     this.emitEvent(createEvent('requestGeneration', currentTime, request));
@@ -178,7 +199,7 @@ export class SimulationService {
   private processDeviceRelease(event: DeviceRelease) {
     event.device.finishService();
 
-    if (this._buffer.isEmpty) {
+    if (this._buffer!.isEmpty) {
       return;
     }
 

@@ -1,19 +1,51 @@
 :host {
+  --page-padding: 8px;
+  --background-color: #EEEEEE;
+  --inner-width: calc(100vw - 2 * var(--page-padding));
+
   display: block;
+  box-sizing: border-box;
+  background-color: var(--background-color);
+  width: 100vw;
+  min-height: 100vh;
+  padding: var(--page-padding);
+}
+
+p {
+  margin: 0;
+  padding: 0;
 }
 
 .simulation-parameters {
-  &__title {
+  --flex-gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--flex-gap);
 
+  &__title {
+    flex: 1 1 100%;
+    grid-column: 1 / -1;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  &__input {
+    flex: 1 1 calc(100% / 3);
+    max-width: 600px;
+
+    span {
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    input {
+      height: 28px;
+      width: 100px
+    }
   }
 }
 
-.logs {
-  max-height: max(100px, 10vh);
-  overflow-y: scroll;
-  width: 100vw;
-
-  &__message {
-    margin-block: 4px;
-  }
+.events-calendar {
+  height: auto;
+  width: var(--inner-width);
 }

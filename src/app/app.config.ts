@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import {provideDisciplines, provideRules} from '@app/providers';
+import {SIMULATION_PARAMS, SimulationParams} from '@app/services/simulation';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -10,6 +11,10 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideDisciplines(),
-    provideRules()
+    provideRules(),
+    {
+      provide: SIMULATION_PARAMS,
+      useValue: { autoconfig: true }
+    }
   ]
 };
