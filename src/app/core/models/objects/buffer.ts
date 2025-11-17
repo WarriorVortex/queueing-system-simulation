@@ -5,7 +5,7 @@ export class Buffer {
   private size: number = 0;
 
   constructor(
-    public readonly capacity: number,
+    public readonly capacity: number = 1,
   ) {
     this.requestQueue = new Array<Request | null>(capacity).fill(null);
   }
@@ -45,7 +45,7 @@ export class Buffer {
     const queue = this.requestQueue;
     const newQueue = this.requests;
     for (let i = 0; i < queue.length; ++i) {
-      queue[i] = newQueue[i] ?? null;
+      queue[i] = newQueue.at(i) ?? null;
     }
     this.size = newQueue.length;
   }

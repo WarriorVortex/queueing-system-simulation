@@ -167,7 +167,7 @@ export class SimulationService extends Observable<SimulationEvent> {
       this.processNSteps(n);
       return;
     }
-    interval(delay).pipe(
+    return interval(delay).pipe(
       take(n),
       takeWhile(() => !this.isEnded()),
       takeUntilDestroyed(this.destroyRef),
@@ -183,7 +183,7 @@ export class SimulationService extends Observable<SimulationEvent> {
       this.processAllSteps();
       return;
     }
-    interval(delay).pipe(
+    return interval(delay).pipe(
       takeWhile(() => !this.isEnded()),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => this.processStep());
@@ -227,8 +227,8 @@ export class SimulationService extends Observable<SimulationEvent> {
   }
 
   private processDeviceRelease(event: DeviceRelease) {
-    const { servicedRequest: served, finishService } = event.device;
-    finishService();
+    const { servicedRequest: served } = event.device;
+    event.device.finishService();
 
     if (this._buffer!.isEmpty) {
       return;

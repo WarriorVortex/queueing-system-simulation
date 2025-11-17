@@ -16,7 +16,7 @@
       "@app/pages": ["src/app/pages"],
       "@app/pages/*": ["src/app/pages/*"],
       "@app/pipes": ["src/app/pipes"],
-      "@app/pipes/*": ["src/app/pipes/*"]
+      "@app/pipes/*": ["src/app/pipes/*"],
     },
     "strict": true,
     "noImplicitOverride": true,

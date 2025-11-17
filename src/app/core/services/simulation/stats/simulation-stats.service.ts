@@ -51,7 +51,6 @@ export class SimulationStatsService {
         const serviceStart = this.indexedServiceStarts.get(id)!;
         const serviceTime = time - serviceStart;
         this.summaryServiceTime.update(value => value + serviceTime);
-        return;
       }
       const sourceId = this.getSourceId(event);
       if (!sourceId) {
@@ -82,7 +81,7 @@ export class SimulationStatsService {
   private computeSourcesStats(): Signal<SourceStats[]> {
     return computed(() =>
       [...this.indexedSourcesStats.entries()]
-        .map(([sourceId, stats]) => ({ sourceId, ...stats()}))
+        .map(([sourceId, stats]) => ({ sourceId, ...stats() }))
         .map(stats => {
           const { totalRejected, totalGenerated } = stats;
           const rejectionRate = totalRejected / totalGenerated;

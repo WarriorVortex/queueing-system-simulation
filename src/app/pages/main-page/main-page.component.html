@@ -22,7 +22,7 @@
   </div>
   <div class="simulation-parameters__input">
     <span>Интенсивность обслуживания: </span>
-    <input type="number" min="0" max="1" [(ngModel)]="serviceTimeParams.lambda"/>
+    <input type="number" min="0" max="1" step="0.05" [(ngModel)]="serviceTimeParams.lambda"/>
   </div>
   <div class="simulation-parameters__input">
     <span>Время моделирования: </span>
