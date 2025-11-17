@@ -1,11 +1,12 @@
-import {computed, inject, Injectable, Signal, signal, WritableSignal} from '@angular/core';
+import {computed, inject, Injectable, Signal, signal} from '@angular/core';
 import {SimulationService} from '../simulation.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {Source} from '@app/models';
 import {SourceStats, SourceSummaryStats, SummaryStats} from './simulation-stats.types';
 import {hasEventType, SimulationEvent} from '@app/services/simulation';
 
 type FlatSourceStats = Omit<SourceStats, 'sourceId' | 'rejectionRate'>;
+type FlatSourceStatsRecord = Record<number, FlatSourceStats>;
+
 const DEFAULT_STATS: FlatSourceStats = {
   totalGenerated: 0,
   totalServiced: 0,
@@ -18,12 +19,11 @@ const DEFAULT_STATS: FlatSourceStats = {
 export class SimulationStatsService {
   private simulation = inject(SimulationService);
 
-  private sources!: Source[];
-  private readonly indexedSourcesStats = new Map<number, WritableSignal<FlatSourceStats>>();
-
+  private readonly sourcesStatsRecord = signal<FlatSourceStatsRecord>({});
   private readonly indexedServiceStarts = new Map<number, number>();
   private readonly summaryServiceTime = signal(0);
   private readonly currentTime = this.simulation.currentTime;
+  private readonly devicesNumber = this.simulation.devicesNumber;
 
   public readonly sourcesStats: Signal<SourceStats[]>;
   public readonly sourceSummaryStats: Signal<SourceSummaryStats>;
@@ -53,11 +53,14 @@ export class SimulationStatsService {
         this.summaryServiceTime.update(value => value + serviceTime);
       }
       const sourceId = this.getSourceId(event);
-      if (!sourceId) {
+      if (sourceId === undefined) {
         return;
       }
-      this.indexedSourcesStats.get(sourceId)
-        ?.update(value => this.modifyStatsWithEvent(value, event));
+      this.sourcesStatsRecord.update(record => {
+        const stats = record[sourceId];
+        const updated = this.modifyStatsWithEvent(stats, event);
+        return { ...record, [sourceId]: updated };
+      });
     });
   }
 
@@ -67,7 +70,7 @@ export class SimulationStatsService {
       const summaryServiceTime = this.summaryServiceTime();
       const averageServiceTime = summaryServiceTime / totalServiced;
       const flowIntensity = 1 / averageServiceTime;
-      const devicesWorkload = summaryServiceTime / this.currentTime();
+      const devicesWorkload = summaryServiceTime / (this.currentTime() * this.devicesNumber());
 
       return {
         averageServiceTime,
@@ -80,20 +83,19 @@ export class SimulationStatsService {
 
   private computeSourcesStats(): Signal<SourceStats[]> {
     return computed(() =>
-      [...this.indexedSourcesStats.entries()]
-        .map(([sourceId, stats]) => ({ sourceId, ...stats() }))
-        .map(stats => {
+      Object.entries(this.sourcesStatsRecord())
+        .map(([sourceId, stats]) => ({ sourceId, ...stats }))
+        .map(({ sourceId, ...stats }) => {
           const { totalRejected, totalGenerated } = stats;
           const rejectionRate = totalRejected / totalGenerated;
-          return { ...stats, rejectionRate };
+          return { ...stats, rejectionRate, sourceId: Number(sourceId) };
         })
     );
   }
 
   private computeSourceSummaryStats(): Signal<SourceSummaryStats> {
     return computed(() => {
-      const stats = [...this.indexedSourcesStats.values()]
-        .map(stats => ({ ...stats()}))
+      const stats = Object.values(this.sourcesStatsRecord())
         .reduce(this.sumSourceStats.bind(this), DEFAULT_STATS);
       const { totalGenerated, totalRejected } = stats;
       const rejectionRate = totalRejected / totalGenerated;
@@ -143,10 +145,10 @@ export class SimulationStatsService {
   }
 
   private reloadSources() {
-    this.sources = this.simulation.sources;
-    this.indexedSourcesStats.clear();
-    for (const { id } of this.sources) {
-      this.indexedSourcesStats.set(id, signal({ ...DEFAULT_STATS }));
-    }
+    const entries = this.simulation.sources
+      .map(({ id }) => id)
+      .map(sourceId => ([ sourceId, { ...DEFAULT_STATS } ]));
+    const record: FlatSourceStatsRecord = Object.fromEntries(entries);
+    this.sourcesStatsRecord.set(record);
   }
 }

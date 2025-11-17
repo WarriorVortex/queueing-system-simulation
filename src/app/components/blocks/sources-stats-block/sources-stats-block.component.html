@@ -1,0 +1,30 @@
+<table class="stats-table">
+  <thead>
+  <tr>
+    <th scope="col">Источник</th>
+    <th scope="col">Всего заявок</th>
+    <th scope="col">Обслужено</th>
+    <th scope="col">Отклонено</th>
+    <th scope="col">Вероятность отказа</th>
+  </tr>
+  </thead>
+  <tbody>
+    @for (sourceStat of sourcesStats(); track sourceStat.sourceId) {
+      <tr>
+        <th scope="row">И{{ sourceStat.sourceId }}</th>
+        <td>{{ sourceStat.totalGenerated }}</td>
+        <td>{{ sourceStat.totalServiced }}</td>
+        <td>{{ sourceStat.totalRejected }}</td>
+        <td>{{ sourceStat.rejectionRate | percent:'1.2-2' }}</td>
+      </tr>
+    }
+  <tr class="stats-table__total-row">
+    <th scope="row">Итого</th>
+    @let summaryStats = sourceSummaryStats();
+    <td>{{ summaryStats.totalGenerated }}</td>
+    <td>{{ summaryStats.totalServiced }}</td>
+    <td>{{ summaryStats.totalRejected }}</td>
+    <td>{{ summaryStats.rejectionRate | percent:'1.2-2' }}</td>
+  </tr>
+  </tbody>
+</table>

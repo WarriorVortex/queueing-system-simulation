@@ -57,9 +57,9 @@ export class SimulationService extends Observable<SimulationEvent> {
   private readonly _closestEventSet = new Set<SpecialSimulationEvent>();
   private readonly _rejectionQueue = new Array<RequestRejection>();
 
-  private _devices!: Map<number, Device>;
-  private _sources!: Map<number, Source>;
-  private _buffer!: Buffer;
+  private _devices: Map<number, Device> | undefined;
+  private _sources: Map<number, Source> | undefined;
+  private _buffer: Buffer | undefined;
 
   private bufferingDispatcher!: BufferingDispatcher;
   private selectionDispatcher!: SelectionDispatcher;
@@ -104,7 +104,7 @@ export class SimulationService extends Observable<SimulationEvent> {
   }
 
   public get rejections() {
-    return this._rejectionQueue;
+    return [...this._rejectionQueue];
   }
 
   public get devices() {
@@ -114,7 +114,7 @@ export class SimulationService extends Observable<SimulationEvent> {
 
   public get sources() {
     const sources = this._sources;
-    return sources ? [...sources.values()] : sources;
+    return sources ? [...sources.values()] : [];
   }
 
   public get buffer() {
@@ -126,7 +126,7 @@ export class SimulationService extends Observable<SimulationEvent> {
     const currentTime = this.simulationEndTime();
     this.pushEvent(createEvent('simulationEnd', currentTime));
 
-    for (const source of this._sources.values()) {
+    for (const source of this._sources?.values() ?? []) {
       this.generateNextRequest(source.id);
     }
 
@@ -273,8 +273,8 @@ export class SimulationService extends Observable<SimulationEvent> {
   }
 
   private initDispatchers() {
-    this.bufferingDispatcher = this.entityService.createBufferingDispatcher(this._buffer);
-    this.selectionDispatcher = this.entityService.createSelectionDispatcher(this._devices.values(), this._buffer);
+    this.bufferingDispatcher = this.entityService.createBufferingDispatcher(this._buffer!);
+    this.selectionDispatcher = this.entityService.createSelectionDispatcher(this._devices!.values(), this._buffer!);
   }
 
   private createIndexedSources() {

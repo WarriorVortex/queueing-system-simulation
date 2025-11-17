@@ -7,7 +7,14 @@ import {
 } from '@app/services/simulation';
 import {FormsModule} from '@angular/forms';
 import {REQUEST_INTERVAL_RULE_PARAMS, SERVICE_TIME_RULE_PARAMS} from '@app/services/entity';
-import {BufferBlockComponent, DevicesBlockComponent, EventsCalendarComponent, LogBlockComponent} from '@app/components';
+import {
+  BufferBlockComponent,
+  DevicesBlockComponent,
+  EventsCalendarComponent,
+  LogBlockComponent,
+  SourcesStatsBlockComponent,
+  SummaryStatsBlockComponent
+} from '@app/components';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {debounceTime, filter, Subscription} from 'rxjs';
 import {IntervalParams, ServiceTimeParams} from '@app/pages/main-page/rule-params.types';
@@ -21,7 +28,9 @@ import {QueryParamsService} from '@app/services/query-params';
     LogBlockComponent,
     EventsCalendarComponent,
     BufferBlockComponent,
-    DevicesBlockComponent
+    DevicesBlockComponent,
+    SummaryStatsBlockComponent,
+    SourcesStatsBlockComponent
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.less',
@@ -56,8 +65,7 @@ export class MainPageComponent implements OnDestroy {
   constructor() {
     this.initChangeOnEvent();
     this.initOnSimulationEndMessage();
-    const { reactiveParams } = this;
-    this.queryParams.bind(reactiveParams, { write: true, read: true, parseFn: Number });
+    this.queryParams.bind(this.reactiveParams, { write: true, read: true, parseFn: Number });
   }
 
   ngOnDestroy() {
@@ -103,7 +111,8 @@ export class MainPageComponent implements OnDestroy {
   }
 
   protected get bufferCells() {
-    return [...this.simulation.buffer.cells];
+    const { buffer } = this.simulation;
+    return buffer?.cells ?? [];
   }
 
   protected get messages() {
@@ -113,6 +122,7 @@ export class MainPageComponent implements OnDestroy {
   protected startSimulation() {
     this.simulation.configureSimulation();
     this.subscription?.unsubscribe();
+    this.simulationStats.reload();
     this._messages = [];
     this._messages.push(`Параметры моделирования заданы`);
     this._messages.push(`Старт моделирования`);
