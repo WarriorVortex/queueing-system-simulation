@@ -1,7 +1,7 @@
-import {inject, Injectable, Injector, OnDestroy, signal, WritableSignal} from '@angular/core';
+import {inject, Injectable, Injector, OnDestroy, Signal, signal} from '@angular/core';
 import {SimulationService} from '../simulation.service';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {BehaviorSubject, filter, interval, Observable, Subscription, switchMap, takeWhile, tap} from 'rxjs';
+import {BehaviorSubject, filter, interval, Observable, Subscription, switchMap, takeWhile} from 'rxjs';
 import {SimulationRunnerError} from './sumulation-runner.errors';
 import {SimulationRunnerConfig} from './simulation-runner.types';
 
@@ -17,6 +17,7 @@ export class SimulationRunnerService implements OnDestroy {
 
   private onStepCallback: VoidFunction | undefined;
   private simulationInterval$: Observable<number> | undefined;
+  private simulationInterval: Signal<number> | number | undefined;
 
   private processSubscription: Subscription | undefined;
   private intervalWatchSubscription: Subscription | undefined;
@@ -75,10 +76,11 @@ export class SimulationRunnerService implements OnDestroy {
     const { interval, onStep } = config;
 
     this.onStepCallback = onStep;
+    this.simulationInterval = interval;
     this.simulationInterval$ = this.createIntervalObservable(interval);
   }
 
-  private createIntervalObservable(interval: number | WritableSignal<number>): Observable<number> {
+  private createIntervalObservable(interval: number | Signal<number>): Observable<number> {
     return typeof interval !== 'number'
       ? toObservable(interval, { injector: this.injector })
       : new BehaviorSubject(interval);
@@ -86,7 +88,7 @@ export class SimulationRunnerService implements OnDestroy {
 
   private setupIntervalWatch(): void {
     this.intervalWatchSubscription = this.simulationInterval$?.pipe(
-      filter(period => period !== 0),
+      filter(period => period === 0),
       filter(() => this._stepsRemained() !== null)
     ).subscribe(() => {
       const remainingSteps = this._stepsRemained()!;
@@ -120,22 +122,12 @@ export class SimulationRunnerService implements OnDestroy {
       return;
     }
 
-    const initialInterval = this.getCurrentInterval();
-    if (initialInterval <= 0) {
+    if (this.currentInterval! <= 0) {
       this.executeStepsSync(steps);
       return;
     }
 
     return this.createAsyncProcessSubscription(steps);
-  }
-
-  private getCurrentInterval(): number {
-    let currentInterval = 0;
-    const subscription = this.simulationInterval$?.subscribe(value => {
-      currentInterval = value;
-    });
-    subscription?.unsubscribe();
-    return currentInterval;
   }
 
   private executeStepsSync(steps: number): void {
@@ -149,17 +141,13 @@ export class SimulationRunnerService implements OnDestroy {
       switchMap(period => interval(period)),
       takeWhile(() => this.shouldContinueProcess())
     ).subscribe(() => {
-      this.processStep();
+      this.simulation.processStep();
+      this.onStepCallback?.();
+      this._stepsRemained.update(value => value !== null ? value - 1 : null);
     });
 
     subscription?.add(() => this._stepsRemained.set(null));
     return subscription;
-  }
-
-  private processStep(): void {
-    this.simulation.processStep();
-    this.onStepCallback?.();
-    this._stepsRemained.update(value => value !== null ? value - 1 : null);
   }
 
   private shouldContinueProcess(): boolean {
@@ -174,5 +162,10 @@ export class SimulationRunnerService implements OnDestroy {
     if (this.isFinished()) {
       throw new SimulationRunnerError('Simulation has already finished', { cause: 'finished' });
     }
+  }
+
+  private get currentInterval() {
+    const value = this.simulationInterval;
+    return typeof value !== 'number' ? value?.() : value;
   }
 }

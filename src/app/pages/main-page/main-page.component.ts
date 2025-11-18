@@ -161,9 +161,9 @@ export class MainPageComponent implements OnDestroy {
   private runWithErrorHandling(func: VoidFunction) {
     try {
       func();
-    } catch (e) {
-      if (e instanceof SimulationRunnerError) {
-        switch (e.cause) {
+    } catch (err) {
+      if (err instanceof SimulationRunnerError) {
+        switch (err.cause) {
           case 'not-started':
             alert('Симуляция не запущена!');
             break;
@@ -183,7 +183,7 @@ export class MainPageComponent implements OnDestroy {
     this.runWithErrorHandling(() => this.simulationRunner.runNSteps(n));
   }
 
-  protected simulateAllSteps(n: number = 1) {
+  protected simulateAllSteps() {
     this.runWithErrorHandling(() => this.simulationRunner.runAllSteps());
   }
 }
