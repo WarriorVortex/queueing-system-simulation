@@ -13,10 +13,10 @@ export class LogBlockComponent {
   logs = input<string[]>([]);
 
   constructor() {
-    this.initScrollEffect();
+    this.createScrollEffect();
   }
 
-  private initScrollEffect() {
+  private createScrollEffect() {
     toObservable(this.logs).pipe(
       takeUntilDestroyed()
     ).subscribe(() => {

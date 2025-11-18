@@ -15,7 +15,6 @@ export const SIMULATION_PARAMS = new InjectionToken<Partial<SimulationParams>>(
   }
 );
 
-
 const DEFAULT_PARAMS: SimulationParams = {
   devicesNumber: 3,
   sourcesNumber: 3,

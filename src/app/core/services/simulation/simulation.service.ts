@@ -1,4 +1,4 @@
-import {computed, DestroyRef, inject, Injectable, Signal, signal} from '@angular/core';
+import {computed, inject, Injectable, Signal, signal} from '@angular/core';
 import {EntityGeneratorService, EntityService} from '@app/services/entity';
 import DEFAULT_PARAMS, {SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
 import {
@@ -20,7 +20,7 @@ import {
   SimulationEvent,
   SpecialSimulationEvent
 } from './events';
-import {interval, Observable, Subject, take, takeWhile} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SimulationState} from './simulation-state';
 
@@ -28,7 +28,6 @@ import {SimulationState} from './simulation-state';
   providedIn: 'root',
 })
 export class SimulationService extends Observable<SimulationEvent> {
-  private destroyRef = inject(DestroyRef);
   private entityService = inject(EntityService);
   private entityGeneratorService = inject(EntityGeneratorService);
   private readonly defaultParams: SimulationParams = {
@@ -49,7 +48,7 @@ export class SimulationService extends Observable<SimulationEvent> {
 
   private readonly _simulationState = signal<SimulationState>(SimulationState.INITIAL);
   public readonly simulationState = this._simulationState.asReadonly();
-  public readonly isEnded!: Signal<boolean>;
+  public readonly isFinished!: Signal<boolean>;
   public readonly isConfigured: Signal<boolean>;
   public readonly isStarted: Signal<boolean>;
 
@@ -67,11 +66,11 @@ export class SimulationService extends Observable<SimulationEvent> {
   private readonly CONFIG_STATES = new Set([
     SimulationState.CONFIGURED,
     SimulationState.STARTED,
-    SimulationState.ENDED
+    SimulationState.FINISHED
   ]);
   private readonly START_STATES = new Set([
     SimulationState.STARTED,
-    SimulationState.ENDED
+    SimulationState.FINISHED
   ]);
 
   constructor() {
@@ -84,7 +83,7 @@ export class SimulationService extends Observable<SimulationEvent> {
     if (this.defaultParams.autoconfig) {
       this.configureSimulation();
     }
-    this.isEnded = computed(() => this.simulationState() === SimulationState.ENDED);
+    this.isFinished = computed(() => this.simulationState() === SimulationState.FINISHED);
     this.isConfigured = computed(() => this.CONFIG_STATES.has(this.simulationState()));
     this.isStarted = computed(() => this.START_STATES.has(this.simulationState()));
   }
@@ -133,7 +132,7 @@ export class SimulationService extends Observable<SimulationEvent> {
     this._simulationState.set(SimulationState.STARTED);
   }
 
-  private processStep() {
+  public processStep() {
     const event = this.findNextEvent();
     this._currentTime.set(event.time);
     this._currentStep.update(i => i + 1);
@@ -152,41 +151,14 @@ export class SimulationService extends Observable<SimulationEvent> {
     this.popEvent(event);
   }
 
-  public nextStep() {
-    this.processStep();
-  }
-
-  private processNSteps(n: number = 1) {
-    while (n-- > 0 && !this.isEnded()) {
+  public processNSteps(n: number = 1) {
+    while (n-- > 0 && !this.isFinished()) {
       this.processStep();
     }
   }
 
-  public nextNSteps(n: number = 1, delay?: number) {
-    if (!delay || delay <= 0) {
-      this.processNSteps(n);
-      return;
-    }
-    return interval(delay).pipe(
-      take(n),
-      takeWhile(() => !this.isEnded()),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => this.processStep());
-  }
-
-  private processAllSteps() {
+  public processAllSteps() {
     this.processNSteps(Infinity);
-  }
-
-  public fullSimulate(delay?: number) {
-    if (!delay || delay <= 0) {
-      this.processAllSteps();
-      return;
-    }
-    return interval(delay).pipe(
-      takeWhile(() => !this.isEnded()),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => this.processStep());
   }
 
   private processRequestAppearance(event: RequestAppearance) {
@@ -262,7 +234,7 @@ export class SimulationService extends Observable<SimulationEvent> {
   }
 
   private endSimulation() {
-    this._simulationState.set(SimulationState.ENDED);
+    this._simulationState.set(SimulationState.FINISHED);
   }
 
   private clearQueues() {

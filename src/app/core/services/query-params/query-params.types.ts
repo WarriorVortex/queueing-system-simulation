@@ -1,6 +1,6 @@
 import {Signal, WritableSignal} from '@angular/core';
 
-export type ReactiveParams = { [p: string]: WritableSignal<unknown> | Signal<unknown> };
+export type ReactiveParams = Record<string, WritableSignal<unknown> | Signal<unknown>>;
 
 export interface QueryParamsBindOptions {
   write?: boolean,
@@ -9,6 +9,6 @@ export interface QueryParamsBindOptions {
   stringifyFn?: StringifyFn,
 }
 
-export type TransformFn<F, T> = (value: F, key?: string) => T;
+export type TransformFn<F, T> = (value: F, key: string) => T;
 export type ParseFn = TransformFn<string, unknown>;
 export type StringifyFn = TransformFn<unknown, string>;

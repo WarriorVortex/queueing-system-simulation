@@ -2,7 +2,7 @@
   <p class="simulation-parameters__title">Параметры моделирования</p>
   <div class="simulation-parameters__input">
     <span>Количество приборов: </span>
-    <input type="number" min="1" [(ngModel)]="devicesNumber"/>
+    <input type="number" min="0" [(ngModel)]="devicesNumber"/>
   </div>
   <div class="simulation-parameters__input">
     <span>Количество источников: </span>
@@ -39,12 +39,11 @@
 <button (click)="simulateNextStep()" class="next-step-btn">
   Следующий шаг
 </button>
-@let interval = simulationInterval();
-<button (click)="simulateAllSteps(interval)" class="next-step-btn">
+<button (click)="simulateAllSteps()" class="next-step-btn">
   Полное моделирование
 </button>
 @let n = simulationStep();
-<button (click)="simulateNSteps(n, interval)" class="next-step-btn">
+<button (click)="simulateNSteps(n)" class="next-step-btn">
   Авто ({{ n }} шагов)
 </button>
 

@@ -35,7 +35,10 @@ export class QueryParamsService {
     const { injector } = this;
     effect(() => {
       const entries = Object.entries(reactiveParams).map(
-        ([key, value]) => ([key, stringify(value())])
+        ([key, value]) => {
+          const string = stringify(value(), key);
+          return [key, string];
+        }
       );
       const queryParams: Params = Object.fromEntries(entries);
       this.router.navigate([], { queryParams, queryParamsHandling: 'merge' });
@@ -48,7 +51,8 @@ export class QueryParamsService {
         for (const [key, value] of Object.entries(params)) {
           const reactiveParam = reactiveParams[key];
           if (reactiveParam && 'set' in reactiveParam) {
-            reactiveParam.set(parse(value));
+            const parsed = parse(value, key);
+            reactiveParam.set(parsed);
           }
         }
       }),
