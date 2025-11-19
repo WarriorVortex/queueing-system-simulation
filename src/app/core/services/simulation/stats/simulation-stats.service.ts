@@ -2,7 +2,7 @@ import {computed, inject, Injectable, Signal, signal} from '@angular/core';
 import {SimulationService} from '../simulation.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SourceStats, SourceSummaryStats, SummaryStats} from './simulation-stats.types';
-import {hasEventType, SimulationEvent} from '@app/services/simulation';
+import {hasEventType, RequestRejection, SimulationEvent} from '@app/services/simulation';
 
 type FlatSourceStats = Omit<SourceStats, 'sourceId' | 'rejectionRate'>;
 type FlatSourceStatsRecord = Record<number, FlatSourceStats>;

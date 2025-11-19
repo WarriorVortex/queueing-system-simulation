@@ -1,6 +1,6 @@
-import {computed, inject, Injectable, Signal, signal} from '@angular/core';
+import {computed, inject, Injectable, OnDestroy, Signal, signal} from '@angular/core';
 import {EntityGeneratorService, EntityService} from '@app/services/entity';
-import DEFAULT_PARAMS, {SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
+import DEFAULT_PARAMS, {ON_RELOAD_SIMULATION, SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
 import {
   Buffer,
   BufferingDispatcher,
@@ -20,20 +20,21 @@ import {
   SimulationEvent,
   SpecialSimulationEvent
 } from './events';
-import {Observable, Subject} from 'rxjs';
+import {Observable, skip, Subject} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SimulationState} from './simulation-state';
 
 @Injectable({
   providedIn: 'root',
 })
-export class SimulationService extends Observable<SimulationEvent> {
+export class SimulationService extends Observable<SimulationEvent> implements OnDestroy {
   private entityService = inject(EntityService);
   private entityGeneratorService = inject(EntityGeneratorService);
-  private readonly defaultParams: SimulationParams = {
+  private readonly defaultParams: Required<SimulationParams> = {
     ...DEFAULT_PARAMS,
     ...inject(SIMULATION_PARAMS),
   };
+  private readonly onReloadCallbacks: VoidFunction[] = inject(ON_RELOAD_SIMULATION);
 
   public readonly devicesNumber = signal(this.defaultParams.devicesNumber);
   public readonly sourcesNumber = signal(this.defaultParams.sourcesNumber);
@@ -73,6 +74,10 @@ export class SimulationService extends Observable<SimulationEvent> {
     SimulationState.FINISHED
   ]);
 
+  private readonly _onConfig$ = new Subject<void>();
+  public readonly onConfig$ = this._onConfig$.asObservable();
+  public readonly onReload$ = this.onConfig$.pipe(skip(1));
+
   constructor() {
     super(subscriber => {
       const subscription = this.simulationEvent$.pipe(
@@ -86,6 +91,13 @@ export class SimulationService extends Observable<SimulationEvent> {
     this.isFinished = computed(() => this.simulationState() === SimulationState.FINISHED);
     this.isConfigured = computed(() => this.CONFIG_STATES.has(this.simulationState()));
     this.isStarted = computed(() => this.START_STATES.has(this.simulationState()));
+    this.onReload$.subscribe(() => this.onReloadCallbacks
+      .forEach(callback => callback())
+    );
+  }
+
+  ngOnDestroy() {
+    this._onConfig$.complete();
   }
 
   public configureSimulation() {
@@ -96,6 +108,7 @@ export class SimulationService extends Observable<SimulationEvent> {
     this.initDispatchers();
     this.clearQueues();
     this._simulationState.set(SimulationState.CONFIGURED);
+    this._onConfig$.next();
   }
 
   public get closestEvents() {
@@ -178,7 +191,7 @@ export class SimulationService extends Observable<SimulationEvent> {
       this.bufferingDispatcher.putInBuffer(request);
     } catch (err) {
       if (err instanceof RequestRejectionError) {
-        rejected = err.rejectedRequest;
+        rejected = err.rejected;
         this.rejectRequest(rejected);
       }
     }

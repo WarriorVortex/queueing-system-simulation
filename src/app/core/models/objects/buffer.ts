@@ -2,7 +2,7 @@ import {Request} from './request';
 
 export class Buffer {
   public readonly requestQueue: (Request | null)[];
-  private size: number = 0;
+  private _size: number = 0;
 
   constructor(
     public readonly capacity: number = 1,
@@ -10,12 +10,40 @@ export class Buffer {
     this.requestQueue = new Array<Request | null>(capacity).fill(null);
   }
 
-  public add(request: Request): boolean {
+  public get size() {
+    return this._size;
+  }
+
+  public replace(oldRequest: Request, newRequest: Request) {
+    const index = this.requestQueue.indexOf(oldRequest);
+    if (index < 0 || index >= this.requestQueue.length) {
+      return false;
+    }
+
+    this.requestQueue[index] = newRequest;
+    return true;
+  }
+
+  public insert(request: Request): boolean;
+  public insert(request: Request, index: number): boolean;
+
+  public insert(request: Request, index?: number): boolean {
     if (this.isFull) {
       return false;
     }
-    this.requestQueue[this.size++] = request;
-    return true;
+
+    if (index === undefined) {
+      this.requestQueue[this._size++] = request;
+      return true;
+    }
+
+    const value = this.requestQueue.at(index);
+    if (value === undefined) {
+      return false;
+    }
+
+    this.requestQueue[index] = request;
+    return false;
   }
 
   public remove(request: Request): boolean {
@@ -26,15 +54,16 @@ export class Buffer {
     }
 
     queue[index] = null;
+    --this._size;
     return true;
   }
 
   public get isFull(): boolean {
-    return this.size === this.capacity;
+    return this._size === this.capacity;
   }
 
   public get isEmpty(): boolean {
-    return this.size === 0;
+    return this._size === 0;
   }
 
   public get hasPlace() {
@@ -47,14 +76,14 @@ export class Buffer {
     for (let i = 0; i < queue.length; ++i) {
       queue[i] = newQueue.at(i) ?? null;
     }
-    this.size = newQueue.length;
+    this._size = newQueue.length;
   }
 
   public get requests(): Request[] {
     return this.requestQueue.filter(value => value !== null);
   }
 
-  public get cells(): (Request | null)[] {
+  public get cells(): Readonly<Array<Request | null>> {
     return [...this.requestQueue];
   }
 }

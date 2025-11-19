@@ -26,10 +26,11 @@ import {
   SummaryStatsBlockComponent
 } from '@app/components';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {debounceTime, filter} from 'rxjs';
+import {debounceTime, filter, tap} from 'rxjs';
 import {IntervalParams, ServiceTimeParams} from '@app/pages/main-page/rule-params.types';
 import {QueryParamsService} from '@app/services/query-params';
 import SIMULATION_PARAMS, {NumericParam, SimulationParam} from './simulation-params.config';
+import {EnvironmentService} from '@app/services/environment';
 
 @Component({
   selector: 'app-main-page',
@@ -50,6 +51,7 @@ import SIMULATION_PARAMS, {NumericParam, SimulationParam} from './simulation-par
 export class MainPageComponent implements OnDestroy {
   private changeDetector = inject(ChangeDetectorRef);
   private queryParams = inject(QueryParamsService);
+  private environment = inject(EnvironmentService);
 
   private simulation = inject(SimulationService);
   private simulationMessage = inject(SimulationMessageService);
@@ -73,27 +75,16 @@ export class MainPageComponent implements OnDestroy {
   protected serviceTimeParams = inject(SERVICE_TIME_RULE_PARAMS) as unknown as ServiceTimeParams;
 
   protected readonly numericParams = SIMULATION_PARAMS;
-  protected readonly reactiveParams: Record<SimulationParam, WritableSignal<number>> = {
-    'interval': this.simulationInterval,
-    'end_time': this.simulationEndTime,
-    'sources_number': this.sourcesNumber,
-    'devices_number': this.devicesNumber,
-    'buffer_capacity': this.bufferCapacity,
-    'a': this.intervalParams.a,
-    'b': this.intervalParams.b,
-    'lambda': this.serviceTimeParams.lambda,
-  };
 
   constructor() {
     this.simulationRunner.configure({ interval: this.simulationInterval });
-    this.queryParams.bind(this.reactiveParams, {
-      write: true,
-      read: true,
-      parseFn: this.parseParam.bind(this)
-    });
+    if (!this.environment.hasProcess('electron')) {
+      this.queryParams.bind(this.reactiveParams, {parseFn: this.parseParam.bind(this)});
+    }
 
     this.initMessageReceiver();
     this.initOnSimulationEndMessage();
+    this.initOnConfigEffect();
   }
 
   ngOnDestroy() {
@@ -106,12 +97,24 @@ export class MainPageComponent implements OnDestroy {
       max = Infinity,
       isInteger = false,
     } = this.numericParams[key as SimulationParam] as NumericParam;
-    let result = Number.parseInt(value);
-    result = Math.min(Math.max(result, min), max);
-    if (isInteger) {
-      result = Math.round(result);
-    }
-    return result;
+    const parseNumber = isInteger
+      ? Number.parseInt
+      : Number.parseFloat;
+    const result = parseNumber(value);
+    return Math.min(Math.max(result, min), max);
+  }
+
+  private get reactiveParams(): Record<SimulationParam, WritableSignal<number>> {
+    return {
+      'interval': this.simulationInterval,
+      'end_time': this.simulationEndTime,
+      'sources_number': this.sourcesNumber,
+      'devices_number': this.devicesNumber,
+      'buffer_capacity': this.bufferCapacity,
+      'a': this.intervalParams.a,
+      'b': this.intervalParams.b,
+      'lambda': this.serviceTimeParams.lambda,
+    };
   }
 
   private initMessageReceiver() {
@@ -131,6 +134,18 @@ export class MainPageComponent implements OnDestroy {
     ).subscribe(() => alert('Симуляция была завершена!'));
   }
 
+  private initOnConfigEffect() {
+    this.simulation.onConfig$.pipe(
+      takeUntilDestroyed()
+    ).subscribe(() => {
+      this.simulationRunner.stop();
+      this.simulationStats.reload();
+      this._messages = [];
+      this._messages.push(`Параметры моделирования заданы`);
+      this._messages.push(`Старт моделирования`);
+    });
+  }
+
   protected get devices() {
     return this.simulation.devices;
   }
@@ -140,8 +155,7 @@ export class MainPageComponent implements OnDestroy {
   }
 
   protected get bufferCells() {
-    const { buffer } = this.simulation;
-    return buffer?.cells ?? [];
+    return this.simulation.buffer?.cells ?? [];
   }
 
   protected get messages() {
@@ -150,11 +164,6 @@ export class MainPageComponent implements OnDestroy {
 
   protected startSimulation() {
     this.simulation.configureSimulation();
-    this.simulationRunner.stop();
-    this.simulationStats.reload();
-    this._messages = [];
-    this._messages.push(`Параметры моделирования заданы`);
-    this._messages.push(`Старт моделирования`);
     this.simulation.startSimulation();
   }
 

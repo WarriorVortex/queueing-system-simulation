@@ -10,7 +10,7 @@
     @for (source of sources(); track source.id) {
       <tr>
         <th scope="row">И{{ source.id }}</th>
-        <td>{{ source.nextArrivalTime ?? '——' }}</td>
+        <td>{{ (source.nextArrivalTime | number: '1.') ?? '—' }}</td>
         <td [class]="source.isActive ? 'status-waiting' : 'status-inactive'">
           {{ source.isActive ? 'Ожидает' : 'Отключен' }}
         </td>
@@ -19,7 +19,7 @@
     @for (device of devices(); track device.id) {
       <tr>
         <th scope="row">П{{ device.id }}</th>
-        <td>{{ device.serviceEndTime ?? '——' }}</td>
+        <td>{{ (device.serviceEndTime | number: '1.') ?? '—' }}</td>
         <td [class]="device.isBusy ? 'status-busy' : 'status-idle'">
           {{ device.isBusy ? 'Занят' : 'Простой' }}
         </td>

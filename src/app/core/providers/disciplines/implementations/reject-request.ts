@@ -10,10 +10,7 @@ export const rejectRequest: RejectionDiscipline = (request, buffer) => {
     }
   }
 
-  buffer.remove(rejectedRequest);
-  buffer.shrink();
-  buffer.add(request);
-
+  buffer.replace(rejectedRequest, request);
   return rejectedRequest;
 }
 

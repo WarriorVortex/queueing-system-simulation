@@ -3,6 +3,15 @@ import {Device} from '@app/models';
 
 let lastIndex = -1;
 
+export const SelectDeviceData = {
+  reload() {
+    lastIndex = -1
+  },
+  get lastIndex() {
+    return lastIndex;
+  }
+};
+
 function findFreeDevice(devices: Device[], start?: number, end?: number) {
   return devices
     .slice(start, end)
@@ -14,7 +23,8 @@ export const selectDevice: DeviceSelectionDiscipline = (devices) => {
     lastIndex = 0;
   }
 
-  let foundDevice = findFreeDevice(devices, lastIndex + 1) ?? findFreeDevice(devices, 0, lastIndex + 1);
+  const index = lastIndex + 1;
+  let foundDevice = findFreeDevice(devices, index) ?? findFreeDevice(devices, 0, index);
   if (foundDevice !== undefined) {
     ++lastIndex;
   }
