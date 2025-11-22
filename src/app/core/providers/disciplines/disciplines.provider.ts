@@ -1,14 +1,20 @@
-import {Provider} from '@angular/core';
+import {EnvironmentProviders, inject, provideAppInitializer, Provider} from '@angular/core';
 import {
   BUFFERING_DISCIPLINE,
   DEVICE_SELECTION_DISCIPLINE,
   REJECTION_DISCIPLINE,
   REQUEST_SELECTION_DISCIPLINE
 } from '@app/services/entity';
-import {bufferRequest, rejectRequest, selectDevice, SelectDeviceData, selectRequest} from './implementations';
-import {ON_RELOAD_SIMULATION} from '@app/services/simulation';
+import {
+  bufferRequest,
+  rejectRequest,
+  reloadLastIndex,
+  selectDevice,
+  selectRequest
+} from './implementations';
+import {SimulationService} from '@app/services/simulation';
 
-export function provideDisciplines(): Provider[] {
+export function provideDisciplines(): (Provider | EnvironmentProviders)[] {
   return [
     {
       provide: DEVICE_SELECTION_DISCIPLINE,
@@ -24,12 +30,13 @@ export function provideDisciplines(): Provider[] {
     },
     {
       provide: REJECTION_DISCIPLINE,
-      useValue: rejectRequest
+      useValue: rejectRequest,
     },
-    {
-      provide: ON_RELOAD_SIMULATION,
-      useValue: [ SelectDeviceData.reload ],
-    }
+    provideAppInitializer(() => {
+      const simulation = inject(SimulationService)
+      simulation.onReload$
+        .subscribe(reloadLastIndex);
+    }),
   ];
 }
 

@@ -1,12 +1,5 @@
 import {InjectionToken} from '@angular/core';
 
-export const ON_RELOAD_SIMULATION = new InjectionToken<VoidFunction[]>(
-  'ON_RELOAD_SIMULATION',
-  {
-    factory: () => [],
-  },
-);
-
 export interface SimulationParams {
   devicesNumber?: number,
   sourcesNumber?: number,
@@ -14,6 +7,10 @@ export interface SimulationParams {
   endTime?: number,
   autoconfig?: boolean,
 }
+
+export const ON_SIMULATION_RELOAD = new InjectionToken<VoidFunction>(
+  'ON_SIMULATION_RELOAD',
+);
 
 export const SIMULATION_PARAMS = new InjectionToken<SimulationParams>(
   'DEFAULT_SIMULATION_PARAMS',

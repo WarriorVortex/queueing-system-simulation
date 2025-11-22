@@ -47,10 +47,18 @@
   Авто ({{ n }} шагов)
 </button>
 
+<br>
+<br>
+
 <p>Шаг: {{ currentStep() }}</p>
 <p>Время: {{ currentTime() }}</p>
 
+<br>
+<br>
+
+<p>Ячейки буфера</p>
 <app-buffer-block [bufferCells]="bufferCells"></app-buffer-block>
+<p>Приборы</p>
 <app-devices-block [devices]="devices"></app-devices-block>
 
 <app-events-calendar [sources]="sources" [devices]="devices"></app-events-calendar>

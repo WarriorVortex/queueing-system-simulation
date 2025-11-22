@@ -155,7 +155,7 @@ export class MainPageComponent implements OnDestroy {
   }
 
   protected get bufferCells() {
-    return this.simulation.buffer?.cells ?? [];
+    return this.simulation.buffer?.queue ?? [];
   }
 
   protected get messages() {

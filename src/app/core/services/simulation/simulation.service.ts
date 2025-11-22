@@ -1,6 +1,6 @@
 import {computed, inject, Injectable, OnDestroy, Signal, signal} from '@angular/core';
 import {EntityGeneratorService, EntityService} from '@app/services/entity';
-import DEFAULT_PARAMS, {ON_RELOAD_SIMULATION, SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
+import DEFAULT_PARAMS, {SIMULATION_PARAMS, SimulationParams} from './simulation.tokens';
 import {
   Buffer,
   BufferingDispatcher,
@@ -13,7 +13,7 @@ import {
 import {
   compareEvents,
   createEvent,
-  DeviceRelease,
+  DeviceRelease, getEventType,
   hasEventType,
   RequestAppearance,
   RequestRejection,
@@ -34,7 +34,6 @@ export class SimulationService extends Observable<SimulationEvent> implements On
     ...DEFAULT_PARAMS,
     ...inject(SIMULATION_PARAMS),
   };
-  private readonly onReloadCallbacks: VoidFunction[] = inject(ON_RELOAD_SIMULATION);
 
   public readonly devicesNumber = signal(this.defaultParams.devicesNumber);
   public readonly sourcesNumber = signal(this.defaultParams.sourcesNumber);
@@ -91,9 +90,7 @@ export class SimulationService extends Observable<SimulationEvent> implements On
     this.isFinished = computed(() => this.simulationState() === SimulationState.FINISHED);
     this.isConfigured = computed(() => this.CONFIG_STATES.has(this.simulationState()));
     this.isStarted = computed(() => this.START_STATES.has(this.simulationState()));
-    this.onReload$.subscribe(() => this.onReloadCallbacks
-      .forEach(callback => callback())
-    );
+
   }
 
   ngOnDestroy() {

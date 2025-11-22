@@ -83,7 +83,7 @@ export class Buffer {
     return this.requestQueue.filter(value => value !== null);
   }
 
-  public get cells(): Readonly<Array<Request | null>> {
-    return [...this.requestQueue];
+  public get queue(): Readonly<Array<Request | null>> {
+    return this.requestQueue;
   }
 }

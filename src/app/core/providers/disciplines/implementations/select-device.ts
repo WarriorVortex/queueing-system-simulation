@@ -3,14 +3,9 @@ import {Device} from '@app/models';
 
 let lastIndex = -1;
 
-export const SelectDeviceData = {
-  reload() {
-    lastIndex = -1
-  },
-  get lastIndex() {
-    return lastIndex;
-  }
-};
+export function reloadLastIndex() {
+  lastIndex = -1;
+}
 
 function findFreeDevice(devices: Device[], start?: number, end?: number) {
   return devices

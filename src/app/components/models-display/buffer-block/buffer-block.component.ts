@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 import {Buffer} from '@app/models';
 import {FormatRequestPipe} from '@app/pipes';
 
-type BufferCell = typeof Buffer.prototype.cells;
+type BufferCell = typeof Buffer.prototype.queue;
 
 @Component({
   selector: 'app-buffer-block',
