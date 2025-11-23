@@ -1,7 +1,7 @@
 import {RejectionDiscipline} from '@app/models/disciplines';
 import {Request} from '@app/models/objects';
 
-export const rejectRequest: RejectionDiscipline = (request, buffer) => {
+export const rejectRequest: RejectionDiscipline = (request, buffer, time) => {
   const { requests } = buffer;
   let rejectedRequest: Request = requests[0];
   for (const elem of requests.slice(1)) {
@@ -10,7 +10,7 @@ export const rejectRequest: RejectionDiscipline = (request, buffer) => {
     }
   }
 
-  buffer.replace(rejectedRequest, request);
+  buffer.replace(rejectedRequest, request, time);
   return rejectedRequest;
 }
 

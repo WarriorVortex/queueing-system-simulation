@@ -14,36 +14,43 @@ export class Buffer {
     return this._size;
   }
 
-  public replace(oldRequest: Request, newRequest: Request) {
+  public replace(oldRequest: Request, newRequest: Request, time?: number) {
     const index = this.requestQueue.indexOf(oldRequest);
-    if (index < 0 || index >= this.requestQueue.length) {
+    if (index < 0) {
       return false;
     }
 
+    newRequest.bufferArrivalTime = time;
     this.requestQueue[index] = newRequest;
     return true;
   }
 
-  public insert(request: Request): boolean;
-  public insert(request: Request, index: number): boolean;
+  public add(request: Request, time?: number) {
+    return this.insert(request, undefined, time);
+  }
 
-  public insert(request: Request, index?: number): boolean {
+  public insert(request: Request, index?: number, time?: number): boolean {
     if (this.isFull) {
       return false;
     }
 
     if (index === undefined) {
+      request.bufferArrivalTime = time;
       this.requestQueue[this._size++] = request;
       return true;
     }
 
-    const value = this.requestQueue.at(index);
-    if (value === undefined) {
+    if (!this.isQueueIndex(index)) {
       return false;
     }
 
+    request.bufferArrivalTime = time;
     this.requestQueue[index] = request;
-    return false;
+    return true;
+  }
+
+  private isQueueIndex(index: number): boolean {
+    return Number.isInteger(index) && index >= 0 && index < this.requestQueue.length;
   }
 
   public remove(request: Request): boolean {

@@ -10,14 +10,14 @@ export class BufferingDispatcher {
     private readonly rejectRequest: RejectionDiscipline,
   ) {}
 
-  public putInBuffer(request: Request): void {
+  public putInBuffer(currentTime: number, request: Request): void {
     if (this.buffer.isFull) {
       const rejected = !this.buffer.isEmpty
-        ? this.rejectRequest(request, this.buffer)
+        ? this.rejectRequest(request, this.buffer, currentTime)
         : request;
       throw new RequestRejectionError(rejected);
     }
 
-    this.bufferRequest(request, this.buffer);
+    this.bufferRequest(request, this.buffer, currentTime);
   }
 }

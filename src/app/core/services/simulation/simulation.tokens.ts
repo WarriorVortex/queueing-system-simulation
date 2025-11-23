@@ -9,7 +9,7 @@ export interface SimulationParams {
 }
 
 export const SIMULATION_PARAMS = new InjectionToken<SimulationParams>(
-  'DEFAULT_SIMULATION_PARAMS',
+  'SIMULATION_PARAMS',
   {
     factory: () => DEFAULT_PARAMS
   }

@@ -22,5 +22,5 @@ export default {
   'buffer_capacity': { min: 0, isInteger: true },
   'a': { min: 0 },
   'b': { min: 0 },
-  'lambda': { min: 0, max: 1 },
+  'lambda': { min: 0 },
 } satisfies Record<SimulationParam, NumericParam>;

@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, input, ViewChild} from '@angular/core';
 import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
-import {ScrollingModule} from '@angular/cdk/scrolling';
+import {CdkVirtualScrollViewport, ScrollingModule} from '@angular/cdk/scrolling';
+import {debounceTime, distinctUntilChanged} from 'rxjs';
 
 @Component({
   selector: 'app-log-block',
@@ -12,7 +13,7 @@ import {ScrollingModule} from '@angular/cdk/scrolling';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogBlockComponent {
-  @ViewChild('logsList') logsList: ElementRef<HTMLElement> | undefined;
+  @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
   logs = input<string[]>([]);
 
   constructor() {
@@ -21,12 +22,10 @@ export class LogBlockComponent {
 
   private createScrollEffect() {
     toObservable(this.logs).pipe(
+      debounceTime(100),
       takeUntilDestroyed()
-    ).subscribe(() => {
-      const elem = this.logsList?.nativeElement;
-      if (elem) {
-        elem.scrollTop = elem.scrollHeight;
-      }
+    ).subscribe(logs => {
+      this.viewport?.scrollToIndex(logs.length - 1, 'instant');
     });
   }
 }

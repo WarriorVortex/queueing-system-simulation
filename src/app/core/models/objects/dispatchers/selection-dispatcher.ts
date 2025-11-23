@@ -12,7 +12,7 @@ export class SelectionDispatcher {
   ) {}
 
   public serveRequest(currentTime: number, request?: Request): Device | null {
-    const selectedRequest = this.selectRequest(this.buffer, request);
+    const selectedRequest = this.selectRequest(this.buffer, request, currentTime);
 
     if (selectedRequest === null) {
       return null;
@@ -21,7 +21,7 @@ export class SelectionDispatcher {
     this.buffer.remove(selectedRequest);
     this.buffer.shrink();
 
-    const selectedDevice = this.selectDevice(this.devices, selectedRequest);
+    const selectedDevice = this.selectDevice(this.devices, selectedRequest, currentTime);
     selectedDevice?.startService(selectedRequest, currentTime);
 
     return selectedDevice;

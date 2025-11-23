@@ -61,6 +61,7 @@ export class MainPageComponent implements OnDestroy {
   protected currentStep = this.simulation.currentStep;
   protected currentTime = this.simulation.currentTime;
   protected isStarted = this.simulation.isStarted;
+  private isFinished = this.simulation.isFinished;
 
   private _messages: string[] = [];
 
@@ -79,7 +80,7 @@ export class MainPageComponent implements OnDestroy {
   constructor() {
     this.simulationRunner.configure({ interval: this.simulationInterval });
     if (!this.environment.hasProcess('electron')) {
-      this.queryParams.bind(this.reactiveParams, {parseFn: this.parseParam.bind(this)});
+      this.queryParams.bind(this.reactiveParams, { parseFn: this.parseParam.bind(this) });
     }
 
     this.initMessageReceiver();
@@ -164,7 +165,9 @@ export class MainPageComponent implements OnDestroy {
   }
 
   protected get messages() {
-    return [...this._messages];
+    return this.isFinished()
+      ? this._messages
+      : [...this._messages];
   }
 
   protected startSimulation() {

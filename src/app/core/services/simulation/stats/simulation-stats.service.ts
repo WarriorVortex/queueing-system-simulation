@@ -2,7 +2,7 @@ import {computed, inject, Injectable, Signal, signal} from '@angular/core';
 import {SimulationService} from '../simulation.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SourceStats, SourceSummaryStats, SummaryStats} from './simulation-stats.types';
-import {hasEventType, RequestRejection, SimulationEvent} from '@app/services/simulation';
+import {hasEventType, SimulationEvent} from '@app/services/simulation';
 
 type FlatSourceStats = Omit<SourceStats, 'sourceId' | 'rejectionRate'>;
 type FlatSourceStatsRecord = Record<number, FlatSourceStats>;
@@ -68,9 +68,10 @@ export class SimulationStatsService {
     return computed(() => {
       const { totalServiced, rejectionRate } = this.sourceSummaryStats();
       const summaryServiceTime = this.summaryServiceTime();
+      const currentTime = this.currentTime();
       const averageServiceTime = summaryServiceTime / totalServiced;
-      const flowIntensity = 1 / averageServiceTime;
-      const devicesWorkload = summaryServiceTime / (this.currentTime() * this.devicesNumber());
+      const flowIntensity = totalServiced / currentTime;
+      const devicesWorkload = summaryServiceTime / (currentTime * this.devicesNumber());
 
       return {
         averageServiceTime,

@@ -185,7 +185,7 @@ export class SimulationService extends Observable<SimulationEvent> implements On
 
     let rejected: Request | undefined;
     try {
-      this.bufferingDispatcher.putInBuffer(request);
+      this.bufferingDispatcher.putInBuffer(currentTime, request);
     } catch (err) {
       if (err instanceof RequestRejectionError) {
         rejected = err.rejected;

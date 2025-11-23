@@ -2,7 +2,7 @@ import {Request} from '@app/models/objects'
 import {RequestSelectionDiscipline} from '@app/models/disciplines';
 
 export const selectRequest: RequestSelectionDiscipline = (buffer, request?) => {
-  const requests = buffer.requests;
+  const { requests } = buffer;
   if (requests.length === 0 && request !== undefined) {
     requests.push(request);
   }
