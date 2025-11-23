@@ -1,70 +1,98 @@
-<div class="simulation-parameters">
-  <p class="simulation-parameters__title">Параметры моделирования</p>
-  <div class="simulation-parameters__input">
-    <span>Количество приборов: </span>
-    <input type="number" min="0" [(ngModel)]="devicesNumber"/>
+<div class="simulation-panel">
+  <div class="parameters-section">
+    <h3>Параметры моделирования</h3>
+    <div class="parameters-section__grid">
+      <div class="parameter">
+        <label>Приборы:</label>
+        <input type="number" min="0" [(ngModel)]="devicesNumber"/>
+      </div>
+      <div class="parameter">
+        <label>Источники:</label>
+        <input type="number" min="0" [(ngModel)]="sourcesNumber"/>
+      </div>
+      <div class="parameter">
+        <label>Буфер:</label>
+        <input type="number" min="0" [(ngModel)]="bufferCapacity"/>
+      </div>
+      <div class="parameter">
+        <label>Мин. интервал:</label>
+        <input type="number" min="0" [(ngModel)]="intervalParams.a"/>
+      </div>
+      <div class="parameter">
+        <label>Макс. интервал:</label>
+        <input type="number" min="0" [(ngModel)]="intervalParams.b"/>
+      </div>
+      <div class="parameter">
+        <label>Интенсивность:</label>
+        <input type="number" min="0" max="1" step="0.05" [(ngModel)]="serviceTimeParams.lambda"/>
+      </div>
+      <div class="parameter">
+        <label>Время моделир.:</label>
+        <input type="number" min="0" [(ngModel)]="simulationEndTime"/>
+      </div>
+      <div class="parameter">
+        <label>Скорость: {{ simulationInterval() }} мс</label>
+        <input type="range" min="0" max="5000" step="100" [(ngModel)]="simulationInterval"/>
+      </div>
+    </div>
   </div>
-  <div class="simulation-parameters__input">
-    <span>Количество источников: </span>
-    <input type="number" min="0" [(ngModel)]="sourcesNumber"/>
-  </div>
-  <div class="simulation-parameters__input">
-    <span>Ёмкость буфера: </span>
-    <input type="number" min="0" [(ngModel)]="bufferCapacity"/>
-  </div>
-  <div class="simulation-parameters__input">
-    <span>Минимальный интервал: </span>
-    <input type="number" min="0" [(ngModel)]="intervalParams.a"/>
-  </div>
-  <div class="simulation-parameters__input">
-    <span>Максимальный интервал: </span>
-    <input type="number" min="0" [(ngModel)]="intervalParams.b"/>
-  </div>
-  <div class="simulation-parameters__input">
-    <span>Интенсивность обслуживания: </span>
-    <input type="number" min="0" max="1" step="0.05" [(ngModel)]="serviceTimeParams.lambda"/>
-  </div>
-  <div class="simulation-parameters__input">
-    <span>Время моделирования: </span>
-    <input type="number" min="0" [(ngModel)]="simulationEndTime"/>
-  </div>
-  <div class="simulation-parameters__input">
-    <span>Скорость моделирования: </span>
-    <input type="range" min="0" max="5000" step="100" [(ngModel)]="simulationInterval"/>
+
+  <div class="control-section">
+    <div class="control-section__buttons">
+      <button (click)="startSimulation()" class="primary">
+        {{ isStarted() ? 'Перезапустить' : 'Старт' }}
+      </button>
+      <button (click)="simulateNextStep()">
+        Следующий шаг
+      </button>
+      <button (click)="simulateAllSteps()">
+        Полное моделирование
+      </button>
+      @let n = simulationStep();
+      <button (click)="simulateNSteps(n)">
+        Авто ({{ n }})
+      </button>
+    </div>
+    <div class="control-section__info">
+      <div class="control-section__info-row">
+        <span>
+          Шаг: <strong>{{ currentStep() }}</strong>
+        </span>
+        <span>
+          Время: <strong>{{ currentTime() }}</strong>
+        </span>
+      </div>
+    </div>
   </div>
 </div>
-<button (click)="startSimulation()">
-  {{ isStarted() ? 'Перезапустить' : 'Старт' }}
-</button>
-<button (click)="simulateNextStep()" class="next-step-btn">
-  Следующий шаг
-</button>
-<button (click)="simulateAllSteps()" class="next-step-btn">
-  Полное моделирование
-</button>
-@let n = simulationStep();
-<button (click)="simulateNSteps(n)" class="next-step-btn">
-  Авто ({{ n }} шагов)
-</button>
 
-<br>
-<br>
+<div class="buffer-section">
+  <h3>Ячейки буфера</h3>
+  <app-buffer-block [bufferCells]="bufferCells"></app-buffer-block>
+</div>
 
-<p>Шаг: {{ currentStep() }}</p>
-<p>Время: {{ currentTime() }}</p>
+<div class="devices-section">
+  <h3>Приборы</h3>
+  <app-devices-block [devices]="devices"></app-devices-block>
+</div>
 
-<br>
-<br>
+<div class="stats-section">
+  <div class="stats-section__calendar">
+    <h3>Календарь событий</h3>
+    <app-events-calendar [sources]="sources" [devices]="devices"></app-events-calendar>
+  </div>
+  <div class="stats-section__sources">
+    <h3>Статистика по источникам</h3>
+    <app-sources-stats-block></app-sources-stats-block>
+  </div>
+</div>
 
-<p>Ячейки буфера</p>
-<app-buffer-block [bufferCells]="bufferCells"></app-buffer-block>
-<p>Приборы</p>
-<app-devices-block [devices]="devices"></app-devices-block>
+<div class="summary-section">
+  <h3>Общая статистика системы</h3>
+  <app-summary-stats-block></app-summary-stats-block>
+</div>
 
-<app-events-calendar [sources]="sources" [devices]="devices"></app-events-calendar>
-
-<p>Сообщения:</p>
-<app-log-block [style.max-height.px]="200" [logs]="messages"></app-log-block>
-
-<app-summary-stats-block></app-summary-stats-block>
-<app-sources-stats-block></app-sources-stats-block>
+<div class="logs-section">
+  <h3>Сообщения</h3>
+  <app-log-block class="logs-section__block" [logs]="messages"></app-log-block>
+</div>

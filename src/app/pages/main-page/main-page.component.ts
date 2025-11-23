@@ -31,6 +31,7 @@ import {IntervalParams, ServiceTimeParams} from '@app/pages/main-page/rule-param
 import {QueryParamsService} from '@app/services/query-params';
 import SIMULATION_PARAMS, {NumericParam, SimulationParam} from './simulation-params.config';
 import {EnvironmentService} from '@app/services/environment';
+import {DecimalPipe} from '@angular/common';
 
 @Component({
   selector: 'app-main-page',
@@ -42,7 +43,8 @@ import {EnvironmentService} from '@app/services/environment';
     BufferBlockComponent,
     DevicesBlockComponent,
     SummaryStatsBlockComponent,
-    SourcesStatsBlockComponent
+    SourcesStatsBlockComponent,
+    DecimalPipe
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.less',
