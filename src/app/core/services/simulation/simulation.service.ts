@@ -13,7 +13,7 @@ import {
 import {
   compareEvents,
   createEvent,
-  DeviceRelease, getEventType,
+  DeviceRelease,
   hasEventType,
   RequestAppearance,
   RequestRejection,

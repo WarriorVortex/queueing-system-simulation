@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
+  Component, HostListener,
   inject,
   OnDestroy,
   signal,
@@ -26,12 +26,11 @@ import {
   SummaryStatsBlockComponent
 } from '@app/components';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {debounceTime, filter, tap} from 'rxjs';
+import {debounceTime, filter} from 'rxjs';
 import {IntervalParams, ServiceTimeParams} from '@app/pages/main-page/rule-params.types';
 import {QueryParamsService} from '@app/services/query-params';
 import SIMULATION_PARAMS, {NumericParam, SimulationParam} from './simulation-params.config';
 import {EnvironmentService} from '@app/services/environment';
-import {DecimalPipe} from '@angular/common';
 
 @Component({
   selector: 'app-main-page',
@@ -43,8 +42,7 @@ import {DecimalPipe} from '@angular/common';
     BufferBlockComponent,
     DevicesBlockComponent,
     SummaryStatsBlockComponent,
-    SourcesStatsBlockComponent,
-    DecimalPipe
+    SourcesStatsBlockComponent
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.less',
@@ -76,7 +74,7 @@ export class MainPageComponent implements OnDestroy {
   protected intervalParams = inject(REQUEST_INTERVAL_RULE_PARAMS) as unknown as IntervalParams;
   protected serviceTimeParams = inject(SERVICE_TIME_RULE_PARAMS) as unknown as ServiceTimeParams;
 
-  protected readonly numericParams = SIMULATION_PARAMS;
+  private readonly numericParams = SIMULATION_PARAMS;
 
   constructor() {
     this.simulationRunner.configure({ interval: this.simulationInterval });
@@ -157,7 +155,8 @@ export class MainPageComponent implements OnDestroy {
   }
 
   protected get bufferCells() {
-    return this.simulation.buffer?.queue ?? [];
+    const { queue = [] } = this.simulation.buffer ?? {};
+    return [...queue];
   }
 
   protected get messages() {
