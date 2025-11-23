@@ -1,9 +1,12 @@
 import {ChangeDetectionStrategy, Component, ElementRef, input, ViewChild} from '@angular/core';
 import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
+import {ScrollingModule} from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'app-log-block',
-  imports: [],
+  imports: [
+    ScrollingModule
+  ],
   templateUrl: './log-block.component.html',
   styleUrl: './log-block.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,

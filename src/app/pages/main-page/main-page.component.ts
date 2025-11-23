@@ -146,6 +146,10 @@ export class MainPageComponent implements OnDestroy {
     });
   }
 
+  protected get logsShowNumber() {
+    return Math.min(7, this._messages.length);
+  }
+
   protected get devices() {
     return this.simulation.devices;
   }

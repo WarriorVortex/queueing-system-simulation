@@ -1,5 +1,5 @@
-<div class="logs" #logsList>
-  @for (log of logs(); track $index) {
-    <p>{{ log }}</p>
-  }
-</div>
+<cdk-virtual-scroll-viewport itemSize="24" class="logs-viewport">
+  <div *cdkVirtualFor="let log of logs()" class="log-item">
+    {{ log }}
+  </div>
+</cdk-virtual-scroll-viewport>

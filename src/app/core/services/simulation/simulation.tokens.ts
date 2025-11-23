@@ -8,10 +8,6 @@ export interface SimulationParams {
   autoconfig?: boolean,
 }
 
-export const ON_SIMULATION_RELOAD = new InjectionToken<VoidFunction>(
-  'ON_SIMULATION_RELOAD',
-);
-
 export const SIMULATION_PARAMS = new InjectionToken<SimulationParams>(
   'DEFAULT_SIMULATION_PARAMS',
   {
