@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, HostListener,
+  Component,
+  HostListener,
   inject,
+  isDevMode,
   OnDestroy,
   signal,
   WritableSignal
@@ -25,7 +27,7 @@ import {
   SourcesStatsBlockComponent,
   SummaryStatsBlockComponent
 } from '@app/components';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
 import {debounceTime, filter} from 'rxjs';
 import {IntervalParams, ServiceTimeParams} from '@app/pages/main-page/rule-params.types';
 import {QueryParamsService} from '@app/services/query-params';
@@ -77,6 +79,28 @@ export class MainPageComponent implements OnDestroy {
 
   private readonly numericParams = SIMULATION_PARAMS;
 
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (document.activeElement?.tagName === 'INPUT') {
+      return;
+    }
+
+    switch (event.key.toUpperCase()) {
+      case 'Q':
+        this.startSimulation();
+        break;
+      case 'W':
+        this.simulateNextStep();
+        break;
+      case 'E':
+        this.simulateAllSteps();
+        break;
+      case 'R':
+        this.simulateNSteps(this.simulationStep());
+        break;
+    }
+  }
+
   constructor() {
     this.simulationRunner.configure({ interval: this.simulationInterval });
     if (!this.environment.hasProcess('electron')) {
@@ -86,6 +110,9 @@ export class MainPageComponent implements OnDestroy {
     this.initMessageReceiver();
     this.initOnSimulationEndMessage();
     this.initOnConfigEffect();
+    if (isDevMode()) {
+      this.initStatsLogging();
+    }
   }
 
   ngOnDestroy() {
@@ -116,6 +143,22 @@ export class MainPageComponent implements OnDestroy {
       'b': this.intervalParams.b,
       'lambda': this.serviceTimeParams.lambda,
     };
+  }
+
+  private initStatsLogging() {
+    let count = 0;
+    toObservable(this.simulation.isFinished).pipe(
+      filter(value => value),
+      takeUntilDestroyed()
+    ).subscribe(() => {
+      console.table({
+        '№ эксперимента': ++count,
+        'Приборы': this.devicesNumber(),
+        'Интенсивность': this.serviceTimeParams.lambda(),
+        'Размер буфера': this.bufferCapacity(),
+        'Процент отказов': this.simulationStats.summaryStats().rejectionRate * 100
+      });
+    })
   }
 
   private initMessageReceiver() {
@@ -171,8 +214,8 @@ export class MainPageComponent implements OnDestroy {
   }
 
   protected startSimulation() {
-    this.simulation.configureSimulation();
-    this.simulation.startSimulation();
+    this.simulation.configure();
+    this.simulation.start();
   }
 
   private runWithErrorHandling(func: VoidFunction) {
@@ -196,7 +239,7 @@ export class MainPageComponent implements OnDestroy {
     this.runWithErrorHandling(() => this.simulationRunner.processNextStep());
   }
 
-  protected simulateNSteps(n: number = 1) {
+  protected simulateNSteps(n: number) {
     this.runWithErrorHandling(() => this.simulationRunner.runNSteps(n));
   }
 

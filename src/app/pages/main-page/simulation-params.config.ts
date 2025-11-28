@@ -15,7 +15,7 @@ export interface NumericParam {
 }
 
 export default {
-  'interval': { min: 0, max: 5000 },
+  'interval': { min: 0, max: 3000 },
   'end_time': { min: 0 },
   'sources_number': { min: 0, isInteger: true },
   'devices_number': { min: 0, isInteger: true },

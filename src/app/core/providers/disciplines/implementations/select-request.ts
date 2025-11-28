@@ -22,8 +22,8 @@ export const selectRequest: RequestSelectionDiscipline = (buffer, request?) => {
 }
 
 function comparePriority(first: Request, second: Request): number {
-  if (second.sourceId > first.sourceId) {
-    return second.sourceId - first.sourceId;
+  if (first.sourceId !== second.sourceId) {
+    return first.sourceId - second.sourceId;
   }
 
   if (second.bufferArrivalTime! > first.bufferArrivalTime!) {

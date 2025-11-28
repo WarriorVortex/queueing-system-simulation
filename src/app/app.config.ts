@@ -15,6 +15,6 @@ export const appConfig: ApplicationConfig = {
     {
       provide: SIMULATION_PARAMS,
       useValue: { autoconfig: true }
-    }
+    },
   ]
 };

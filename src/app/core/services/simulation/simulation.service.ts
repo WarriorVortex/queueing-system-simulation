@@ -85,7 +85,7 @@ export class SimulationService extends Observable<SimulationEvent> implements On
       return subscription.unsubscribe;
     });
     if (this.defaultParams.autoconfig) {
-      this.configureSimulation();
+      this.configure();
     }
     this.isFinished = computed(() => this.simulationState() === SimulationState.FINISHED);
     this.isConfigured = computed(() => this.CONFIG_STATES.has(this.simulationState()));
@@ -97,7 +97,7 @@ export class SimulationService extends Observable<SimulationEvent> implements On
     this._onConfig$.complete();
   }
 
-  public configureSimulation() {
+  public configure() {
     this._currentStep.set(0);
     this._devices = this.createIndexedDevices();
     this._sources = this.createIndexedSources();
@@ -130,7 +130,7 @@ export class SimulationService extends Observable<SimulationEvent> implements On
     return this._buffer;
   }
 
-  public startSimulation() {
+  public start() {
     this._currentTime.set(0);
     const currentTime = this.simulationEndTime();
     this.pushEvent(createEvent('simulationEnd', currentTime));

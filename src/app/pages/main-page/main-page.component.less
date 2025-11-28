@@ -1,27 +1,51 @@
+@gap-between-sections: 8px;
+@section-padding: 16px;
+@section-padding-compact: 12px;
+@border-radius: 8px;
+@shadow-intensity: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+@title-font-size: 18px;
+@title-color: #333;
+@title-margin-bottom: 16px;
+
+@input-padding: 8px;
+@button-padding: 10px;
+@parameter-gap: 6px;
+
+@parameters-grid-gap: 10px;
+@control-buttons-gap: 12px;
+@stats-section-gap: 16px;
+
+@background-color: #f5f5f5;
+@border-color: #ddd;
+@primary-color: #007bff;
+@primary-hover-color: #0056b3;
+@info-border-color: #eee;
+
 :host {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  background: #f5f5f5;
+  gap: @gap-between-sections;
+  padding: @gap-between-sections;
+  background: @background-color;
 }
 
 .section-base() {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: @section-padding;
+  border-radius: @border-radius;
+  box-shadow: @shadow-intensity;
 }
 
 .section-title() {
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  color: #333;
+  margin: 0 0 @title-margin-bottom 0;
+  font-size: @title-font-size;
+  color: @title-color;
 }
 
 .input-styles() {
-  padding: 8px;
-  border: 1px solid #ddd;
+  padding: @input-padding;
+  border: 1px solid @border-color;
   border-radius: 4px;
   font-size: 14px;
   width: 100%;
@@ -29,8 +53,8 @@
 }
 
 .button-styles() {
-  padding: 10px;
-  border: 1px solid #ddd;
+  padding: @button-padding;
+  border: 1px solid @border-color;
   border-radius: 4px;
   background: white;
   cursor: pointer;
@@ -42,30 +66,30 @@
 .simulation-panel {
   display: grid;
   grid-template-columns: 3fr 1fr;
-  gap: 16px;
+  gap: @gap-between-sections;
   align-items: stretch;
 }
 
 .parameters-section {
   .section-base();
-  padding: 16px;
+  padding: @section-padding-compact;
 
   h3 {
     .section-title();
-    margin-bottom: 12px;
+    margin-bottom: @title-margin-bottom - 4px;
   }
 
   &__grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: @parameters-grid-gap;
   }
 }
 
 .parameter {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: @parameter-gap;
 
   label {
     font-size: 14px;
@@ -93,14 +117,14 @@
 
   &__buttons {
     display: grid;
-    gap: 12px;
+    gap: @control-buttons-gap;
     grid-template-columns: repeat(2, 1fr);
   }
 
   &__info {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #eee;
+    margin-top: @control-buttons-gap;
+    padding-top: @control-buttons-gap;
+    border-top: 1px solid @info-border-color;
   }
 
   &__info-row {
@@ -108,7 +132,7 @@
     grid-template-columns: 1fr 2fr;
     justify-items: left;
     font-size: 14px;
-    column-gap: 16px;
+    column-gap: @gap-between-sections;
   }
 }
 
@@ -120,12 +144,12 @@ button {
   }
 
   &.primary {
-    background: #007bff;
+    background: @primary-color;
     color: white;
-    border-color: #007bff;
+    border-color: @primary-color;
 
     &:hover {
-      background: #0056b3;
+      background: @primary-hover-color;
     }
   }
 }
@@ -144,7 +168,7 @@ button {
 .stats-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: @stats-section-gap;
   align-items: stretch;
 
   &__calendar,
@@ -179,12 +203,12 @@ button {
 
 @media (max-width: 768px) {
   :host {
-    padding: 12px;
-    gap: 12px;
+    padding: @gap-between-sections - 4px;
+    gap: @gap-between-sections - 4px;
   }
 
   .section-base();
-  padding: 16px;
+  padding: @section-padding-compact;
 
   .parameters-section__grid {
     grid-template-columns: 1fr;
@@ -196,6 +220,6 @@ button {
 
   .control-section__info-row {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: @parameters-grid-gap;
   }
 }
