@@ -1,3 +1,154 @@
+// ===== ПЕРЕМЕННЫЕ =====
+@axis-height: 50px;
+@axis-header-width: 120px;
+@point-size: 8px;
+@interval-height: 3px;
+@time-scale: 2px; // 1 единица времени = 2px
+
+@source-color: #2196f3;
+@device-color: #4caf50;
+@buffer-color: #ff9800;
+@special-color: #9c27b0;
+@rejection-color: #f44336;
+
+@axis-border-color: #e0e0e0;
+@background-color: #fafafa;
+
 :host {
   display: block;
+}
+
+// ===== ОСНОВНЫЕ СТИЛИ =====
+.timeline-diagram {
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: @background-color;
+  min-height: 300px;
+}
+
+// ===== ОБЩИЕ СТИЛИ ОСЕЙ =====
+.axis {
+  display: flex;
+  min-height: @axis-height;
+  border-bottom: 1px solid @axis-border-color;
+  position: relative;
+
+  &-header {
+    width: @axis-header-width;
+    min-width: @axis-header-width;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: white;
+    border-right: 1px solid @axis-border-color;
+    font-weight: 500;
+    font-size: 12px;
+    color: #666;
+  }
+
+  &-content {
+    flex: 1;
+    position: relative;
+    min-width: 1000px; // Минимальная ширина для прокрутки
+  }
+}
+
+// ===== СТИЛИ ТОЧЕК =====
+.point {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &-marker {
+    width: @point-size;
+    height: @point-size;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--special {
+      background: @special-color;
+    }
+
+    &--rejection {
+      background: @rejection-color;
+    }
+  }
+
+  &-label {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+    white-space: nowrap;
+  }
+}
+
+// ===== СТИЛИ ИНТЕРВАЛОВ =====
+.interval {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &-line {
+    height: @interval-height;
+    background: currentColor;
+    border-radius: 1px;
+  }
+
+  &-label {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+    white-space: nowrap;
+  }
+}
+
+// ===== ЦВЕТА ДЛЯ РАЗНЫХ ОСЕЙ =====
+.axis--sources {
+  .point-marker {
+    background: @source-color;
+  }
+}
+
+.axis--devices {
+  .interval-line {
+    color: @device-color;
+  }
+}
+
+.axis--buffer {
+  .interval-line {
+    color: @buffer-color;
+  }
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ СТИЛИ =====
+.timeline-diagram::-webkit-scrollbar {
+  height: 8px;
+}
+
+.timeline-diagram::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.timeline-diagram::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.timeline-diagram::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

@@ -29,10 +29,11 @@ import {
 } from '@app/components';
 import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
 import {debounceTime, filter} from 'rxjs';
-import {IntervalParams, ServiceTimeParams} from '@app/pages/main-page/rule-params.types';
 import {QueryParamsService} from '@app/services/query-params';
+import {IntervalParams, ServiceTimeParams} from './rule-params.types';
 import SIMULATION_PARAMS, {NumericParam, SimulationParam} from './simulation-params.config';
 import {EnvironmentService} from '@app/services/environment';
+import {TimelineDiagramComponent} from '@app/components/timeline-diagram';
 
 @Component({
   selector: 'app-main-page',
@@ -44,7 +45,8 @@ import {EnvironmentService} from '@app/services/environment';
     BufferBlockComponent,
     DevicesBlockComponent,
     SummaryStatsBlockComponent,
-    SourcesStatsBlockComponent
+    SourcesStatsBlockComponent,
+    TimelineDiagramComponent
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.less',

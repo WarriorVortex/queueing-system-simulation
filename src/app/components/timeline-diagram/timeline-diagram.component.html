@@ -1,1 +1,8 @@
-<p>timeline-diagram works!</p>
+<div class="timeline-diagram">
+  <app-timeline-axis
+    [data]="getAxisData(sourceAxis, 1)"
+    [max]="simulationEnd()"
+    [current]="currentTime()"
+    [formatter]="formatter.bind(this)"
+  ></app-timeline-axis>
+</div>

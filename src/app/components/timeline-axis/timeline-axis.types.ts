@@ -1,6 +1,6 @@
 export interface DiagramPoint<T> {
   value: T;
-  timestamp: number,
+  time: number,
 }
 
 export interface DiagramInterval<T> {
