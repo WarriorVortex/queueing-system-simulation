@@ -8,6 +8,7 @@ import {
   RequestRejection,
   ServiceStart,
   SimulationEnd,
+  SimulationEvent,
   SimulationService
 } from '@app/services/simulation';
 import {DiagramInterval, DiagramPoint, TimelineAxisComponent} from '@app/components';
@@ -110,7 +111,7 @@ export class TimelineDiagramComponent {
     });
   }
 
-  private handleBuffering(event: BufferingEvent) {
+  private handleBuffering(event: BufferingEvent | SimulationEvent) {
     const { time } = event;
     const { queue } = this.buffer!;
     for (let i = 0; i < this.bufferCells.length; ++i) {
@@ -155,6 +156,7 @@ export class TimelineDiagramComponent {
       value: servicedRequest!,
       interval: { start: time }
     });
+    this.handleBuffering(event);
   }
 
   private handleDeviceRelease(event: DeviceRelease) {

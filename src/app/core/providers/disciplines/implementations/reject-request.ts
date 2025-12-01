@@ -3,17 +3,13 @@ import {Request} from '@app/models/objects';
 
 export const rejectRequest: RejectionDiscipline = (request, buffer, time) => {
   const { requests } = buffer;
-  let rejectedRequest: Request = requests[0];
-  for (const elem of requests.slice(1)) {
-    if (compareRejectPriority(rejectedRequest, elem) > 0) {
-      rejectedRequest = elem;
-    }
-  }
+
+  const rejectedRequest = requests.reduce((rejectedRequest, currentRequest) =>
+    currentRequest.bufferArrivalTime! > rejectedRequest.bufferArrivalTime!
+      ? currentRequest
+      : rejectedRequest
+  );
 
   buffer.replace(rejectedRequest, request, time);
   return rejectedRequest;
-}
-
-function compareRejectPriority(first: Request, second: Request): number {
-  return first.bufferArrivalTime! - second.bufferArrivalTime!;
 }
