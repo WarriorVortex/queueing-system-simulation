@@ -10,20 +10,12 @@ import {DiagramInterval, DiagramPoint} from './timeline-axis.types';
 })
 export class TimelineAxisComponent<T> {
   formatter = input<(value: T) => string>(String);
-  data = input<DiagramPoint<T>[] | DiagramInterval<T>[]>([]);
+  points = input<DiagramPoint<T>[]>([]);
+  intervals = input<DiagramInterval<T>[]>([]);
   max = input<number>();
 
   private readonly maxValue = this.computeMaxValue();
   current = input<number>(this.maxValue());
-
-  protected isDiagramPointUsed = computed(() => {
-    const data = this.data();
-    return data.length > 0 && this.isDiagramPoint(data[0]);
-  });
-
-  private isDiagramPoint(value: DiagramPoint<T> | DiagramInterval<T>): value is DiagramPoint<T> {
-    return 'time' in value;
-  }
 
   private computeMaxValue() {
     return computed(() => {
@@ -31,14 +23,19 @@ export class TimelineAxisComponent<T> {
       if (max !== undefined) {
         return max;
       }
-      const data = this.data();
-      const last = data.at(data.length - 1);
-      if (last === undefined) {
-        return 0;
+
+      let data: DiagramPoint<T>[] | DiagramInterval<T>[] = this.points();
+      if (data.length > 0) {
+        return data[data.length - 1].time;
       }
-      return !this.isDiagramPoint(last)
-        ? (last.interval.end ?? last.interval.start)
-        : last.time;
+
+      data = this.intervals();
+      if (data.length > 0) {
+        const { interval } = data[data.length - 1];
+        return interval.end ?? interval.start;
+      }
+
+      return 0;
     })
   }
 
@@ -48,8 +45,9 @@ export class TimelineAxisComponent<T> {
     return ((end - interval.start) / this.maxValue()) * 100;
   }
 
-  protected getIntervalPosition(interval: DiagramInterval<T>) {
-    return (interval.interval.start / this.maxValue()) * 100;
+  protected getIntervalPosition(item: DiagramInterval<T>) {
+    const { interval } = item;
+    return (interval.start / this.maxValue()) * 100;
   }
 
   protected getPointPosition(item: DiagramPoint<T>) {

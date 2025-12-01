@@ -1,30 +1,34 @@
 @let formatFn = formatter();
-@if (isDiagramPointUsed()) {
+@if (points().length > 0) {
   <div class="axis axis--points">
-    @for (item of data(); track $index) {
+    @for (item of points(); track $index) {
       @let point = item;
       <div class="point"
          [style.left.%]="getPointPosition($any(point))"
       >
         <div class="point__marker"></div>
-        <span class="point__label">
+        @if (point.value) {
+          <span class="point__label">
           {{ formatFn(point.value) }}
         </span>
+        }
       </div>
     }
   </div>
 } @else {
   <div class="axis axis--intervals">
-    @for (item of data(); track $index) {
+    @for (item of intervals(); track $index) {
       @let interval = item;
       <div class="interval"
          [style.left.%]="getIntervalPosition($any(interval))"
          [style.width.%]="getIntervalWidth($any(interval))"
       >
         <div class="interval__track" [class.has-end]="$any(interval).interval.end !== undefined"></div>
-        <span class="interval__label">
+        @if (interval.value) {
+          <span class="interval__label">
           {{ formatFn(interval.value) }}
         </span>
+        }
       </div>
     }
   </div>

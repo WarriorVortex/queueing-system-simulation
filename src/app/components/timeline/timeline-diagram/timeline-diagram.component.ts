@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, input} from '@angular/core';
 import {
   BufferingEvent,
   DeviceRelease,
@@ -10,11 +10,13 @@ import {
   SimulationEnd,
   SimulationService
 } from '@app/services/simulation';
-import {DiagramInterval, DiagramPoint, TimelineAxisComponent} from '@app/components/timeline-axis';
-import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
+import {DiagramInterval, DiagramPoint, TimelineAxisComponent} from '@app/components';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {Buffer, Request} from '@app/models';
 import {tap} from 'rxjs';
 import {FormatRequestPipe} from '@app/pipes';
+
+type SpecialEventValue = { id: number, type: 'device' | 'source' } | null
 
 @Component({
   selector: 'app-timeline-diagram',
@@ -29,7 +31,10 @@ import {FormatRequestPipe} from '@app/pipes';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimelineDiagramComponent {
+  resolution = input<number>(10);
+
   private changeDetector = inject(ChangeDetectorRef);
+  private formatRequestPipe = inject(FormatRequestPipe);
   private simulation = inject(SimulationService);
   protected simulationEnd = this.simulation.simulationEndTime;
   protected currentTime = this.simulation.currentTime;
@@ -37,21 +42,32 @@ export class TimelineDiagramComponent {
   protected readonly sourceAxis = new Map<number, DiagramPoint<Request>[]>();
   protected readonly deviceAxis = new Map<number, DiagramInterval<Request>[]>();
   protected readonly bufferAxis = new Map<number, DiagramInterval<Request>[]>();
-  protected formatRequestPipe = inject(FormatRequestPipe);
 
-  protected specialEvents: DiagramPoint<Request | null>[] = [];
+  protected specialEvents: DiagramPoint<SpecialEventValue>[] = [];
   protected rejections: DiagramPoint<Request>[] = [];
   private buffer: Buffer | undefined;
   private bufferCells: Array<Request | null> = [];
 
+  protected totalWidth = computed(() => this.simulationEnd() * this.resolution());
+
   constructor() {
     this.initReloadEffect();
     this.initSimulationEffect();
-    toObservable(this.simulation.currentStep).subscribe(() => console.log(this.sourceAxis));
   }
 
-  protected formatter(value: Request | null) {
+  protected formatRequest(value: Request | null) {
     return this.formatRequestPipe.transform(value) ?? '';
+  }
+
+  protected formatSpecialEvent(value: SpecialEventValue) {
+    switch (value?.type) {
+      case 'device':
+        return `П${value.id}`;
+      case 'source':
+        return `И${value.id}`;
+      default:
+        return 'Конец модел.';
+    }
   }
 
   private initReloadEffect() {
@@ -119,6 +135,10 @@ export class TimelineDiagramComponent {
 
   private handleRequestGeneration(event: RequestGeneration) {
     const { generated: value } = event;
+    if (value.arrivalTime > this.simulationEnd()) {
+      return;
+    }
+
     const { sourceId } = value;
     this.sourceAxis.get(sourceId)?.push({ value, time: value.arrivalTime });
   }
@@ -138,15 +158,21 @@ export class TimelineDiagramComponent {
   }
 
   private handleDeviceRelease(event: DeviceRelease) {
-    const { time, serviced, device: { id } } = event;
+    const { time, device: { id } } = event;
     const axis = this.deviceAxis.get(id)!;
     axis[axis.length - 1].interval.end = time;
-    this.specialEvents.push({ time, value: serviced });
+
+    const value = { id, type: 'device' as const };
+    this.specialEvents.push({ time, value });
   }
 
   private handleRequestAppearance(event: RequestAppearance) {
-    const { time, request } = event;
-    this.specialEvents.push({ time, value: request });
+    const {
+      time,
+      request: { sourceId: id }
+    } = event;
+    const value = { id, type: 'source' as const };
+    this.specialEvents.push({ time, value });
   }
 
   private handleSimulationEnd(event: SimulationEnd) {

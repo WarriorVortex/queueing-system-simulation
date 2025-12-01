@@ -33,7 +33,7 @@ import {QueryParamsService} from '@app/services/query-params';
 import {IntervalParams, ServiceTimeParams} from './rule-params.types';
 import SIMULATION_PARAMS, {NumericParam, SimulationParam} from './simulation-params.config';
 import {EnvironmentService} from '@app/services/environment';
-import {TimelineDiagramComponent} from '@app/components/timeline-diagram';
+import {TimelineDiagramComponent} from 'src/app/components/timeline/timeline-diagram';
 
 @Component({
   selector: 'app-main-page',

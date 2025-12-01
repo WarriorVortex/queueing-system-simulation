@@ -1,19 +1,18 @@
-<app-timeline-diagram></app-timeline-diagram>
 <div class="simulation-panel">
   <div class="parameters-section">
     <h3>Параметры моделирования</h3>
     <div class="parameters-section__grid">
       <div class="parameter">
         <label>Приборы:</label>
-        <input type="number" min="0" [(ngModel)]="devicesNumber"/>
+        <input type="number" min="0" step="1" [(ngModel)]="devicesNumber"/>
       </div>
       <div class="parameter">
         <label>Источники:</label>
-        <input type="number" min="0" [(ngModel)]="sourcesNumber"/>
+        <input type="number" min="0" step="1" [(ngModel)]="sourcesNumber"/>
       </div>
       <div class="parameter">
         <label>Буфер:</label>
-        <input type="number" min="0" [(ngModel)]="bufferCapacity"/>
+        <input type="number" min="0" step="1" [(ngModel)]="bufferCapacity"/>
       </div>
       <div class="parameter">
         <label>Мин. интервал:</label>
@@ -75,6 +74,11 @@
 <div class="devices-section">
   <h3>Приборы</h3>
   <app-devices-block [devices]="devices"></app-devices-block>
+</div>
+
+<div class="diagram-section">
+  <h3>Временная диаграмма</h3>
+  <app-timeline-diagram [resolution]="10"></app-timeline-diagram>
 </div>
 
 <div class="stats-section">
