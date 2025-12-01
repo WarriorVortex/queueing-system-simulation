@@ -1,5 +1,4 @@
 import {RejectionDiscipline} from '@app/models/disciplines';
-import {Request} from '@app/models/objects';
 
 export const rejectRequest: RejectionDiscipline = (request, buffer, time) => {
   const { requests } = buffer;

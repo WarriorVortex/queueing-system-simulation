@@ -81,13 +81,53 @@ export class MainPageComponent implements OnDestroy {
 
   private readonly numericParams = SIMULATION_PARAMS;
 
+  protected usedBlocks = {
+    'use_params': {
+      key: 'A',
+      signal: signal(true)
+    },
+    'use_control': {
+      key: 'S',
+      signal: signal(true)
+    },
+    'use_buffer': {
+      key: 'D',
+      signal: signal(true),
+    },
+    'use_devices': {
+      key: 'F',
+      signal: signal(true),
+    },
+    'use_diagram': {
+      key: 'G',
+      signal: signal(true)
+    },
+    'use_event_calendar': {
+      key: 'H',
+      signal: signal(true)
+    },
+    'use_source_stats': {
+      key: 'J',
+      signal: signal(true)
+    },
+    'use_summary_stats': {
+      key: 'K',
+      signal: signal(true)
+    },
+    'use_logs': {
+      key: 'L',
+      signal: signal(true)
+    },
+  } as const;
+
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     if (document.activeElement?.tagName === 'INPUT') {
       return;
     }
 
-    switch (event.key.toUpperCase()) {
+    const pressedKey = event.key.toUpperCase();
+    switch (pressedKey) {
       case 'Q':
         this.startSimulation();
         break;
@@ -100,13 +140,24 @@ export class MainPageComponent implements OnDestroy {
       case 'R':
         this.simulateNSteps(this.simulationStep());
         break;
+      case 'T':
+        Object.entries(this.usedBlocks)
+          .forEach(([_, { signal }]) => signal.set(true))
+        break;
     }
+    Object.entries(this.usedBlocks)
+      .forEach(([_, { key, signal }]) => {
+        if (key === pressedKey) {
+          signal.update(value => !value)
+        }
+      });
   }
 
   constructor() {
     this.simulationRunner.configure({ interval: this.simulationInterval });
     if (!this.environment.hasProcess('electron')) {
-      this.queryParams.bind(this.reactiveParams, { parseFn: this.parseParam.bind(this) });
+      this.queryParams.bind(this.reactiveParams, { parseFn: this.parseNumericParam.bind(this) });
+      this.queryParams.bind(this.usedBlocksParams, { parseFn: this.parseBoolean.bind(this) });
     }
 
     this.initMessageReceiver();
@@ -121,7 +172,7 @@ export class MainPageComponent implements OnDestroy {
     this.simulationRunner.stop();
   }
 
-  private parseParam(value: string, key: string) {
+  private parseNumericParam(value: string, key: string) {
     const {
       min = -Infinity,
       max = Infinity,
@@ -132,6 +183,10 @@ export class MainPageComponent implements OnDestroy {
       : Number.parseFloat;
     const result = parseNumber(value);
     return Math.min(Math.max(result, min), max);
+  }
+
+  private parseBoolean(value: string): boolean {
+    return value === 'true';
   }
 
   private get reactiveParams(): Record<SimulationParam, WritableSignal<number>> {
@@ -145,6 +200,12 @@ export class MainPageComponent implements OnDestroy {
       'b': this.intervalParams.b,
       'lambda': this.serviceTimeParams.lambda,
     };
+  }
+
+  private get usedBlocksParams(): Record<string, WritableSignal<boolean>> {
+    const entries = Object.entries(this.usedBlocks)
+      .map(([param, { signal }]) => ([param, signal]));
+    return Object.fromEntries(entries);
   }
 
   private initStatsLogging() {
