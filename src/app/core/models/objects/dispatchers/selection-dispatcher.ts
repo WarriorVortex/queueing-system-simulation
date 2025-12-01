@@ -1,7 +1,7 @@
 import { Buffer } from '../buffer';
 import {Request} from '../request';
 import {Device} from '../device';
-import {RequestSelectionDiscipline, DeviceSelectionDiscipline} from '../../disciplines';
+import {RequestSelectionDiscipline, DeviceSelectionDiscipline} from '@app/models/disciplines';
 
 export class SelectionDispatcher {
   constructor(
