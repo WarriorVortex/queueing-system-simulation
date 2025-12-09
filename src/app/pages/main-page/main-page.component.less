@@ -1,0 +1,227 @@
+@gap-between-sections: 8px;
+@section-padding: 16px;
+@section-padding-compact: 12px;
+@border-radius: 8px;
+@shadow-intensity: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+@title-font-size: 18px;
+@title-color: #333;
+@title-margin-bottom: 16px;
+
+@input-padding: 8px;
+@button-padding: 10px;
+@parameter-gap: 6px;
+
+@parameters-grid-gap: 10px;
+@control-buttons-gap: 12px;
+@stats-section-gap: 16px;
+
+@background-color: #f5f5f5;
+@border-color: #ddd;
+@primary-color: #007bff;
+@primary-hover-color: #0056b3;
+@info-border-color: #eee;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  gap: @gap-between-sections;
+  padding: @gap-between-sections;
+  background: @background-color;
+}
+
+.section-base() {
+  background: white;
+  padding: @section-padding;
+  border-radius: @border-radius;
+  box-shadow: @shadow-intensity;
+}
+
+.section-title() {
+  margin: 0 0 @title-margin-bottom 0;
+  font-size: @title-font-size;
+  color: @title-color;
+}
+
+.input-styles() {
+  padding: @input-padding;
+  border: 1px solid @border-color;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.button-styles() {
+  padding: @button-padding;
+  border: 1px solid @border-color;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.simulation-panel {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: @gap-between-sections;
+  align-items: stretch;
+}
+
+.parameters-section {
+  .section-base();
+  padding: @section-padding-compact;
+
+  h3 {
+    .section-title();
+    margin-bottom: @title-margin-bottom - 4px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: @parameters-grid-gap;
+  }
+}
+
+.parameter {
+  display: flex;
+  flex-direction: column;
+  gap: @parameter-gap;
+
+  label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  input {
+    .input-styles();
+
+    &[type="range"] {
+      padding: 0;
+    }
+  }
+}
+
+.control-section {
+  .section-base();
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &__buttons {
+    display: grid;
+    gap: @control-buttons-gap;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &__info {
+    margin-top: @control-buttons-gap;
+    padding-top: @control-buttons-gap;
+    border-top: 1px solid @info-border-color;
+  }
+
+  &__info-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    justify-items: left;
+    font-size: 14px;
+    column-gap: @gap-between-sections;
+  }
+}
+
+button {
+  .button-styles();
+
+  &:hover {
+    background: #f8f9fa;
+  }
+
+  &.primary {
+    background: @primary-color;
+    color: white;
+    border-color: @primary-color;
+
+    &:hover {
+      background: @primary-hover-color;
+    }
+  }
+}
+
+.buffer-section,
+.devices-section,
+.diagram-section,
+.summary-section,
+.logs-section {
+  .section-base();
+
+  h3 {
+    .section-title();
+  }
+}
+
+.stats-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: @stats-section-gap;
+  align-items: stretch;
+
+  &__calendar,
+  &__sources {
+    .section-base();
+
+    h3 {
+      .section-title();
+    }
+  }
+}
+
+.logs-section {
+  max-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1200px) {
+  .simulation-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-section {
+    grid-template-columns: 1fr;
+  }
+
+  .parameters-section__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    padding: @gap-between-sections - 4px;
+    gap: @gap-between-sections - 4px;
+  }
+
+  .section-base();
+  padding: @section-padding-compact;
+
+  .parameters-section__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-section__buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .control-section__info-row {
+    grid-template-columns: 1fr;
+    gap: @parameters-grid-gap;
+  }
+}

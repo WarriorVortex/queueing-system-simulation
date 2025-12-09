@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.summary-stats {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  &__title {
+    margin: 0 0 20px 0;
+    color: #263238;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 6px solid #2196f3;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  &__label {
+    font-size: 14px;
+    color: #546e7a;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #263238;
+  }
+}

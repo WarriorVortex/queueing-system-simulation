@@ -1,0 +1,19 @@
+<div class="summary-stats__grid">
+  @let stats = summaryStats();
+  <div class="stat-card">
+    <span class="stat-card__label">Интенсивность потока</span>
+    <span class="stat-card__value">{{ (stats.flowIntensity | number:'1.3') ?? '—' }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-card__label">Среднее время обслуживания</span>
+    <span class="stat-card__value">{{ (stats.averageServiceTime | number:'1.3') ?? '—' }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-card__label">Вероятность отказа</span>
+    <span class="stat-card__value">{{ (stats.rejectionRate | percent:'1.3') ?? '—' }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-card__label">Загрузка приборов</span>
+    <span class="stat-card__value">{{ (stats.devicesWorkload | percent:'1.3') ?? '—' }}</span>
+  </div>
+</div>

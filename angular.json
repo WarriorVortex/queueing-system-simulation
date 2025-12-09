@@ -3,9 +3,24 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "queueing-system-coursework": {
+    "queueing-system-simulation": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:service": {
+          "type": "service",
+          "path": "src/app/core/services"
+        },
+        "@schematics/angular:component": {
+          "type": "component",
+          "displayBlock": true,
+          "changeDetection": "OnPush",
+          "style": "less"
+        },
+        "@schematics/angular:pipe": {
+          "path": "src/app/pipes",
+          "typeSeparator": "."
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -14,9 +29,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -56,10 +69,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "queueing-system-coursework:build:production"
+              "buildTarget": "queueing-system-simulation:build:production"
             },
             "development": {
-              "buildTarget": "queueing-system-coursework:build:development"
+              "buildTarget": "queueing-system-simulation:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -70,10 +83,7 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               {

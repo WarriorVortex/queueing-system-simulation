@@ -3,6 +3,21 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@app/models": ["src/app/core/models"],
+      "@app/models/*": ["src/app/core/models/*"],
+      "@app/services": ["src/app/core/services"],
+      "@app/services/*": ["src/app/core/services/*"],
+      "@app/providers": ["src/app/core/providers"],
+      "@app/providers/*": ["src/app/core/providers/*"],
+      "@app/components": ["src/app/components"],
+      "@app/components/*": ["src/app/components/*"],
+      "@app/pages": ["src/app/pages"],
+      "@app/pages/*": ["src/app/pages/*"],
+      "@app/pipes": ["src/app/pipes"],
+      "@app/pipes/*": ["src/app/pipes/*"],
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -13,7 +28,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

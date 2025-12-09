@@ -1,0 +1,64 @@
+@logs-font-size: 12px;
+@logs-height: 24px;
+@border-color: #e0e0e0;
+@scrollbar-color: #c1c1c1;
+
+:host {
+  display: block;
+}
+
+.logs-viewport {
+  height: 100%;
+  width: 100%;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: @scrollbar-color;
+    border-radius: 4px;
+
+    &:hover {
+      background: darken(@scrollbar-color, 10%);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: @scrollbar-color #f1f1f1;
+}
+
+.logs {
+  min-height: calc(2 * @logs-font-size);
+  max-height: inherit;
+  height: inherit;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid @border-color;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: @logs-font-size;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  line-height: 1.4;
+}
+
+.log-item {
+  margin: 2px 0;
+  padding: 2px 4px;
+  height: @logs-height;
+  word-break: break-word;
+  box-sizing: border-box;
+
+  &:nth-child(odd) {
+    background-color: #f8f8f8;
+  }
+
+  &:hover {
+    background-color: #e3f2fd;
+  }
+}

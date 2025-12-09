@@ -1,0 +1,18 @@
+@import '../cell-container.mixin.less';
+
+:host {
+  display: block;
+}
+
+@occupied-color: #2ed62e;
+@cell-width: 90px;
+@cell-height: 45px;
+@cell-gap: 8px;
+
+.cell-container-style(
+  buffer,
+  @occupied-color,
+  @cell-width,
+  @cell-height,
+  @cell-gap
+);

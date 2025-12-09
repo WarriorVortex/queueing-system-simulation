@@ -1,0 +1,29 @@
+<table class="uniform-table">
+  <thead>
+  <tr>
+    <th scope="col">Номер источника/прибора</th>
+    <th scope="col">Ближайшее особое событие</th>
+    <th scope="col">Состояние</th>
+  </tr>
+  </thead>
+  <tbody>
+    @for (source of sources(); track source.id) {
+      <tr>
+        <th scope="row">И{{ source.id }}</th>
+        <td>{{ (source.nextArrivalTime | number: '1.0-16') ?? '—' }}</td>
+        <td [class]="source.isActive ? 'status-waiting' : 'status-inactive'">
+          {{ source.isActive ? 'Ожидает' : 'Отключен' }}
+        </td>
+      </tr>
+    }
+    @for (device of devices(); track device.id) {
+      <tr>
+        <th scope="row">П{{ device.id }}</th>
+        <td>{{ (device.serviceEndTime | number: '1.0-16') ?? '—' }}</td>
+        <td [class]="device.isBusy ? 'status-busy' : 'status-idle'">
+          {{ device.isBusy ? 'Занят' : 'Простой' }}
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

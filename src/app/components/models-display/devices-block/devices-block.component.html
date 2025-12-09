@@ -1,0 +1,15 @@
+<div class="device-container">
+  @for (device of devices(); track $index) {
+    <div [class]="{
+        'device-cell': true,
+        'device-cell-occupied': device.isBusy,
+        'device-cell-free': device.isFree
+      }"
+    >
+      <span class="device-cell__number">{{ device.id }}</span>
+      <span class="device-cell__content">
+        {{ (device.servicedRequest | formatRequest) ?? 'Простой' }}
+      </span>
+    </div>
+  }
+</div>

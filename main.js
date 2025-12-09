@@ -1,16 +1,28 @@
 const { app, BrowserWindow } = require('electron');
+const { isDevMode } = require("@angular/core");
 
 let browserWindow;
 
 const createWindow = () => {
   browserWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    title: 'Симуляция работы модели СМО',
+    width: 800 * 1.2,
+    height: 600 * 1.2,
     backgroundColor: '#FFFFFF',
+    autoHideMenuBar: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
   });
 
-  browserWindow.loadURL(`file://${__dirname}/index.html`);
-  browserWindow.webContents.openDevTools();
+  if (isDevMode()) {
+    browserWindow.loadURL('http://localhost:4200');
+    browserWindow.webContents.openDevTools();
+  } else {
+    const targetDir = 'queueing-system-simulation/browser';
+    browserWindow.loadURL(`file://${__dirname}/dist/${targetDir}/index.html`);
+  }
 
   browserWindow.on('closed', () => {
     browserWindow = null;

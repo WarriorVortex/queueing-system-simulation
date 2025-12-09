@@ -1,0 +1,89 @@
+@let formatter = formatRequest.bind(this);
+@let max = simulationEnd();
+@let current = currentTime();
+
+<div class="timeline-diagram-wrapper">
+  <div class="timeline-diagram-container">
+    <div class="timeline-diagram-content" [style.width.px]="totalWidth()">
+      @for (sourceId of sourceAxis.keys(); track sourceId) {
+        <div class="axis-row axis-source">
+          <span class="axis-label">И{{sourceId}}</span>
+          <app-timeline-axis
+            [points]="getAxisData(sourceAxis, sourceId)"
+            [max]="max"
+            [current]="current"
+            [formatter]="formatter"
+            class="axis-content"
+          ></app-timeline-axis>
+        </div>
+      }
+      @for (deviceId of deviceAxis.keys(); track deviceId) {
+        <div class="axis-row axis-device">
+          <span class="axis-label">П{{deviceId}}</span>
+          <app-timeline-axis
+            [intervals]="getAxisData(deviceAxis, deviceId)"
+            [max]="max"
+            [current]="current"
+            [formatter]="formatter"
+            class="axis-content"
+          ></app-timeline-axis>
+        </div>
+      }
+      @for (index of bufferAxis.keys(); track index) {
+        <div class="axis-row axis-buffer">
+          <span class="axis-label">Б{{index + 1}}</span>
+          <app-timeline-axis
+            [intervals]="getAxisData(bufferAxis, index)"
+            [max]="max"
+            [current]="current"
+            [formatter]="formatter"
+            class="axis-content"
+          ></app-timeline-axis>
+        </div>
+      }
+      <div class="axis-row axis-special">
+        <span class="axis-label">ОС</span>
+        <app-timeline-axis
+          [points]="specialEvents"
+          [max]="max"
+          [current]="current"
+          [formatter]="formatSpecialEvent.bind(this)"
+          class="axis-content"
+        ></app-timeline-axis>
+      </div>
+      <div class="axis-row axis-rejection">
+        <span class="axis-label">О</span>
+        <app-timeline-axis
+          [points]="rejections"
+          [max]="max"
+          [current]="current"
+          [formatter]="formatter"
+          class="axis-content"
+        ></app-timeline-axis>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color source-color"></div>
+      <span class="legend-label">Источники</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color device-color"></div>
+      <span class="legend-label">Приборы</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color buffer-color"></div>
+      <span class="legend-label">Буфер</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color special-color"></div>
+      <span class="legend-label">Особые события</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color rejection-color"></div>
+      <span class="legend-label">Отказы</span>
+    </div>
+  </div>
+</div>
