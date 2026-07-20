@@ -17,4 +17,4 @@ jobs:
       - name: Build and Publish
         uses: bitovi/github-actions-angular-to-github-pages@v1.0.0
         with:
-          path: dist/queueing-system-simulation
+          path: dist/queueing-system-simulation/browser
